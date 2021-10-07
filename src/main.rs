@@ -88,6 +88,7 @@ fn main() {
     let total: u8 = format!("{}", total).parse().unwrap();
     let mut bar = ProgressBar::new("result", ' ', '#');
     bar.set_progress(total);
+    println!("you had {} out of {} correct", result, vocab_total);
     println!("{}", bar.render());
 
     exit(0);
