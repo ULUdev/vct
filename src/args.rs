@@ -3,21 +3,24 @@ use std::env::var;
 
 pub struct Params {
     pub lang: String,
-    pub help: bool,
-    pub version: bool,
     pub config_path: String,
     pub config_dir: String,
+    pub quit: bool,
+    pub dict: String,
 }
 
 impl Params {
     pub fn new() -> Params {
-        let homedir: String = var("HOME").unwrap();
+        let user_confdir: String = match var("XDG_CONFIG_HOME") {
+            Ok(n) => n,
+            Err(_) => format!("{}/.config", var("HOME").unwrap()),
+        };
         Params {
             lang: String::new(),
-            help: false,
-            version: false,
-            config_path: format!("{}/.config/vct/config.toml", homedir),
-            config_dir: format!("{}/.config/vct", homedir),
+            config_path: format!("{}/vct/config.toml", user_confdir),
+            config_dir: format!("{}/vct", user_confdir),
+            quit: false,
+            dict: String::new(),
         }
     }
 }
@@ -25,33 +28,51 @@ impl Params {
 pub fn load_params() -> Params {
     let arguments: Vec<String> = args().collect();
     let mut params: Params = Params::new();
+    if arguments.len() < 2 {
+        eprintln!("{}", HELP_STR);
+        params.quit = true;
+    }
     for (idx, arg) in arguments.clone().into_iter().enumerate() {
         match arg.as_str() {
             "-h" | "--help" => {
-                params.help = true;
+                eprintln!("{}", HELP_STR);
+                params.quit = true;
             }
             "-v" | "--version" => {
-                params.version = true;
+                eprintln!("{}", VERSION_STR);
+                params.quit = true;
             }
             "-c" | "--config" => {
-                if arguments.len() > idx {
+                if (arguments.len() - 1) > idx {
                     params.config_path = arguments[idx + 1usize].clone();
                 } else {
                     eprintln!("vct: no config path provided");
                 }
             }
             "-l" | "--lang" => {
-                if arguments.len() > idx {
+                if (arguments.len() - 1) > idx {
                     params.lang = arguments[idx + 1usize].clone();
                 } else {
                     eprintln!("vct: no lang provided")
                 }
             }
             "-d" | "--config-dir" => {
-                if arguments.len() > idx {
+                if (arguments.len() - 1) > idx {
                     params.config_dir = arguments[idx + 1usize].clone();
                 } else {
                     eprintln!("vct: no config dir provided");
+                }
+            }
+            "-D" | "--dict" => {
+                if (arguments.len() - 3) > idx {
+                    params.dict = format!(
+                        "{};{};{}",
+                        arguments[idx + 1usize].clone(),
+                        arguments[idx + 2usize].clone(),
+                        arguments[idx + 3usize].clone()
+                    );
+                } else {
+                    eprintln!("vct: no parameters for dict operations provided");
                 }
             }
             _ => (),
@@ -60,7 +81,7 @@ pub fn load_params() -> Params {
     params
 }
 
-pub const HELP_STR: &str = "
+const HELP_STR: &str = "
 Usage:
   vct [OPTIONS]
 Options:
@@ -68,6 +89,7 @@ Options:
   -v,--version: print the version and exit
   -c,--config <config>: set a different config path
   -l,--lang: set the lang to choose vocabulary from
+  -d,--dict <dict> <name> <meanings>: add a new entry to an existing dict (meanings is a comma seperated list)
 
 ";
-pub const VERSION_STR: &str = "vct: v0.1.0";
+const VERSION_STR: &str = "vct: v0.1.0";

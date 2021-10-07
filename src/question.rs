@@ -1,4 +1,3 @@
-use btui::pbar::ProgressBar;
 use btui::{effects::*, print::*};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -9,8 +8,8 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>) -> usize {
     println!(
         "{}You will be learning {} {} vocabularies{}",
         fg(Color::Green),
-        lang,
         vocab.len(),
+        lang,
         sp(Special::Reset)
     );
     let mut progress = 0usize;
@@ -60,7 +59,6 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>) -> usize {
             }
             if cur_vocab.get_meanings().contains(&captured) {
                 println!("{}correct!{}", fg(Color::Green), sp(Special::Reset));
-                progress += 1;
                 meanings_done_count += 1;
                 meanings_done.push(captured);
             } else {
@@ -68,9 +66,20 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>) -> usize {
                 for meaning in cur_vocab.get_meanings()[1..].to_vec() {
                     correct_meanings_string.push_str(format!(", {}", meaning).as_str());
                 }
-                println!("{}wrong! {}{}{:?}{} would have been right{}", fg(Color::Red), fg(Color::White), sp(Special::Bold), correct_meanings_string, fg(Color::Red), sp(Special::Reset));
+                println!(
+                    "{}wrong! {}{}{:?}{} would have been right{}",
+                    fg(Color::Red),
+                    fg(Color::White),
+                    sp(Special::Bold),
+                    correct_meanings_string,
+                    fg(Color::Red),
+                    sp(Special::Reset)
+                );
                 break;
             }
+        }
+        if meanings == meanings_done_count {
+            progress += 1;
         }
         done.push(cur_vocab);
     }
