@@ -1,9 +1,8 @@
-use btui::{effects::*, print::*};
+use btui::{effects::*, print::*, pbar::ProgressBar};
+use rand::seq::SliceRandom;
 use std::fs::{create_dir_all, File};
 use std::path::Path;
 use std::process::exit;
-use rand::seq::SliceRandom;
-use rand::thread_rng();
 
 mod args;
 mod cfg;
@@ -71,14 +70,25 @@ fn main() {
     if params.lang == String::new() {
         exit(0);
     }
-    let vocab: Vec<Vocab> =
-        match vocab_from_file(format!("{}/{}", params.config_dir, params.lang).as_str()) {
-            Ok(n) => n,
-            Err(e) => {
-                eprintln!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset));
-                exit(1);
-            }
-        };
+    let vocab = match load_vocab(params.config_dir, params.lang.clone()) {
+        Ok(n) => n,
+        Err(e) => {
+            eprintln!(
+                "{}vct: error while parsing vocabulary dictionary: {}{}",
+                fg(Color::Red),
+                e,
+                sp(Special::Reset)
+            );
+            exit(1);
+        }
+    };
+    let result: usize = question::question_vocab(params.lang.clone(), vocab.clone());
+    let vocab_total: usize = vocab.clone().len();
+    let total: usize = ((result/vocab_total)*100usize);
+    let total: u8 = format!("{}", total).parse().unwrap();
+    let mut bar = ProgressBar::new("result", ' ', '#');
+    bar.set_progress(total);
+    println!("{}", bar.render());
 
     exit(0);
 }

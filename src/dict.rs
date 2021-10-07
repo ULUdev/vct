@@ -1,67 +1,73 @@
-use btui::{effects::*, print::*};
 use std::fs::read_to_string;
+use std::io::{Error, ErrorKind};
 
-#[derive(Debug, Clone)]
-/// struct representing vocabulary
+#[derive(Debug, Clone, PartialEq)]
 pub struct Vocab {
-    vocab: String,
-    meaning: Vec<String>,
+    name: String,
+    meanings: Vec<String>,
 }
 
 impl Vocab {
-    /// create a new vocab
-    pub fn new(vocab: String, meaning: Vec<String>) -> Vocab {
-        Vocab { vocab, meaning }
+    
+    /// create a new abstracted vocabulary
+    /// # Arguments
+    /// *`name`: the vocab in the language to learn
+    /// *`meanings`: all meanings to learn
+    /// # Returns
+    /// a new abstracted vocabulary
+    pub fn new(name: String, meanings: Vec<String>) -> Vocab {
+        Vocab { name, meanings }
     }
 
-    pub fn get_vocab(&self) -> String {
-        self.vocab.clone()
+    /// parse a String to a vocab
+    /// # Arguments
+    /// *`string`: the string to parse
+    /// # Returns
+    /// a new vocabulary wrapped in a `Result`
+    pub fn from_string(string: String) -> Result<Vocab, Error> {
+        let parts: Vec<&str> = string.as_str().split(';').collect();
+        if parts.len() < 2 {
+            return Err(Error::new(ErrorKind::InvalidInput, "string has invalid format"));
+        }
+        let name: String = parts[0].to_string();
+        let meanings_str: Vec<&str> = parts[1].split(',').collect();
+        let meanings: Vec<String> = meanings_str.iter().map(|meaning| meaning.to_lowercase()).collect();
+        Ok(Vocab::new(name, meanings))
     }
 
-    pub fn get_meaning(&self) -> Vec<String> {
-        self.meaning.clone()
+    /// get the meanings of a vocabulary
+    /// # Returns
+    /// the meanings as a `Vec<String>`
+    pub fn get_meanings(&self) -> Vec<String> {
+        self.meanings.clone()
     }
 
-    pub fn set_vocab(&mut self, vocab: String) {
-        self.vocab = vocab;
+    /// get the actual vocab to learn
+    /// # Returns
+    /// the vocab as a `String`
+    pub fn get_name(&self) -> String {
+        self.name.clone()
     }
 
-    pub fn set_meaning(&mut self, meaning: Vec<String>) {
-        self.meaning = meaning;
-    }
 }
 
-pub fn vocab_from_file(filename: &str) -> Result<Vec<Vocab>, std::io::Error> {
-    let contents: String = match read_to_string(filename) {
-        Ok(c) => c,
+pub fn load_vocab(config_dir: String, lang: String) -> Result<Vec<Vocab>, Error> {
+    let conf_contents: String = match read_to_string(format!("{}/dicts/{}", config_dir, lang).as_str()) {
+        Ok(n) => n,
         Err(e) => {
             return Err(e);
         }
     };
     let mut out: Vec<Vocab> = Vec::new();
-    let mut idx: usize = 1;
-    for line in contents.as_str().lines() {
-        if line.is_empty() {
-            continue;
-        } else {
-            let parts: Vec<&str> = line.split_whitespace().collect();
-            if parts.len() < 2 {
-                eprintln!(
-                    "{}vct: error in dict {} at line {}: no correct vocab provided{}",
-                    fg(Color::Red),
-                    filename,
-                    idx,
-                    sp(Special::Reset)
-                );
-            } else {
-                let mut left: Vec<String> = Vec::new();
-                for i in parts[1..].iter() {
-                    left.push(i.to_string());
-                }
-                out.push(Vocab::new(parts[0].to_string(), left));
+    for line in conf_contents.as_str().lines() {
+        let new_line: String = line.chars().filter(|x| x != &'\n').collect();
+        let voc: Vocab = match Vocab::from_string(new_line){
+            Ok(n) => n,
+            Err(e) => {
+                return Err(e);
             }
-        }
-        idx += 1;
+        };
+        out.push(voc);
     }
 
     Ok(out)
