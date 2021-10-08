@@ -1,6 +1,6 @@
+use crate::cfg::*;
 use std::fs::read_to_string;
 use std::io::{Error, ErrorKind};
-use crate::cfg::*;
 use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -67,29 +67,21 @@ pub fn load_vocab(config_dir: String, lang: String, conf: Config) -> Result<Vec<
                     dict_dirname = elm;
                     break;
                 }
-            } else if Path::new(
-                format!(
-                    "{}/{}/{}",
-                    config_dir.clone(),
-                    elm,
-                    lang.clone()
-                )
-                .as_str(),
-            )
-            .exists()
+            } else if Path::new(format!("{}/{}/{}", config_dir.clone(), elm, lang.clone()).as_str())
+                .exists()
             {
                 dict_dirname = format!("{}/{}", config_dir, elm);
                 break;
             }
         }
     }
-    let conf_contents: String =
-        match read_to_string(format!("{}/{}", dict_dirname, lang).as_str()) {
-            Ok(n) => n,
-            Err(e) => {
-                return Err(e);
-            }
-        };
+    let conf_contents: String = match read_to_string(format!("{}/{}", dict_dirname, lang).as_str())
+    {
+        Ok(n) => n,
+        Err(e) => {
+            return Err(e);
+        }
+    };
     let mut out: Vec<Vocab> = Vec::new();
     for line in conf_contents.as_str().lines() {
         let new_line: String = line.chars().filter(|x| x != &'\n').collect();

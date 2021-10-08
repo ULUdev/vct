@@ -19,3 +19,8 @@ To create a set of vocabulary use the `-D` or `--dict` flag followed by:
 1. the language
 2. the vocabulary
 3. the meanings as a comma separated list
+if the language doesn't already exist it will be created.
+
+## Configuration
+The configuration file currently only allows you to overwrite the default set of directories
+to search for dictionaries.

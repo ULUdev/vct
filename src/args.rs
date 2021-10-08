@@ -88,8 +88,8 @@ Options:
   -h,--help: print this help page and exit
   -v,--version: print the version and exit
   -c,--config <config>: set a different config path
+  -d,--config-dir <confdir>: set a different config dir
   -l,--lang: set the lang to choose vocabulary from
-  -d,--dict <dict> <name> <meanings>: add a new entry to an existing dict (meanings is a comma seperated list)
-
+  -D,--dict <dict> <name> <meanings>: add a new entry to an existing dict (meanings is a comma seperated list)
 ";
-const VERSION_STR: &str = "vct: v0.1.0";
+const VERSION_STR: &str = "vct: v1.0.0";

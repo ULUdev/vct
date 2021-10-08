@@ -85,7 +85,7 @@ fn main() {
             let dicts = conf.clone().dicts.unwrap();
             for elm in dicts.clone() {
                 if elm.starts_with('/') {
-                    if Path::new(format!("{}", elm).as_str()).exists() {
+                    if Path::new(elm.to_string().as_str()).exists() {
                         dict_dirname = elm;
                         break;
                     }
@@ -97,11 +97,8 @@ fn main() {
                 }
             }
         }
-        if !Path::new(format!("{}/{}", dict_dirname.clone(), dict_fname.clone()).as_str()).exists()
-        {
-            let _ = match File::create(
-                format!("{}/{}", dict_dirname.clone(), dict_fname.clone()).as_str(),
-            ) {
+        if !Path::new(format!("{}/{}", dict_dirname, dict_fname).as_str()).exists() {
+            let _ = match File::create(format!("{}/{}", dict_dirname, dict_fname).as_str()) {
                 Ok(_) => (),
                 Err(e) => {
                     eprintln!(
@@ -146,7 +143,7 @@ fn main() {
     if params.lang == String::new() {
         exit(0);
     }
-    let vocab = match load_vocab(dict_dirname, params.lang.clone(), conf.clone()) {
+    let vocab = match load_vocab(params.config_dir, params.lang.clone(), conf) {
         Ok(n) => n,
         Err(e) => {
             eprintln!(
@@ -163,8 +160,8 @@ fn main() {
     let total: u8 = ((result / vocab_total) * 100.0) as u8;
     let mut bar = ProgressBar::new("result", '-', '#');
     bar.set_progress(total);
-    println!("you had {} out of {} correct", result, vocab_total);
-    println!("{}", bar.render());
+    println!("\nyou had {} out of {} correct", result, vocab_total);
+    println!("{}\n", bar.render());
 
     exit(0);
 }

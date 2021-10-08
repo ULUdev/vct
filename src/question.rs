@@ -42,7 +42,17 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>) -> usize {
                 meanings,
                 sp(Special::Reset)
             );
-            so.flush();
+            let _ = match so.flush() {
+                Ok(_) => (),
+                Err(e) => {
+                    eprintln!(
+                        "{}vct: error when flushing stdout: {}{}",
+                        fg(Color::Red),
+                        e,
+                        sp(Special::Reset)
+                    );
+                }
+            };
             let mut input: String = String::new();
             match stdin().read_line(&mut input) {
                 Ok(_) => (),
