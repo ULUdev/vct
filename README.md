@@ -2,6 +2,9 @@
 ## a vocabulary trainer for the terminal
 
 ## Installation
+### AUR
+`vct` is in the AUR as `vct`. You can just install it that way
+### source
 1. clone the repository
 2. run `./configure.sh -p <prefix>` to set the prefix to install to
 3. run `make install`
