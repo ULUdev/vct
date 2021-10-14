@@ -1,4 +1,4 @@
-use btui::{effects::*, pbar::ProgressBar, print::*};
+use btui::{effects::*, pbar::ExtProgressBar, print::*};
 use std::fs::{create_dir_all, File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
@@ -158,7 +158,7 @@ fn main() {
     let result: f32 = question::question_vocab(params.lang, vocab.clone()) as f32;
     let vocab_total: f32 = vocab.len() as f32;
     let total: u8 = ((result / vocab_total) * 100.0) as u8;
-    let mut bar = ProgressBar::new("result", '-', '#');
+    let mut bar = ExtProgressBar::new("[=> ]", "result");
     bar.set_progress(total);
     println!("\nyou had {} out of {} correct", result, vocab_total);
     println!("{}\n", bar.render());

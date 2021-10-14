@@ -6,6 +6,7 @@ use std::io::Error;
 /// struct representing a config file for vct
 pub struct Config {
     pub dicts: Option<Vec<String>>,
+    pub vocab: Option<String>,
 }
 
 /// load the configuration file

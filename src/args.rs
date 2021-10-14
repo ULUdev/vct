@@ -92,4 +92,4 @@ Options:
   -l,--lang: set the lang to choose vocabulary from
   -D,--dict <dict> <name> <meanings>: add a new entry to an existing dict (meanings is a comma seperated list)
 ";
-const VERSION_STR: &str = "vct: v1.0.0";
+const VERSION_STR: &str = "vct: v1.1.1";
