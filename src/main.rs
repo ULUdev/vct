@@ -72,15 +72,10 @@ fn main() {
         }
     };
     if params.dict != String::new() {
-        let parts: Vec<String> = params
-            .dict
-            .as_str()
-            .split(';')
-            .map(|x| x.to_string())
-            .collect();
-        let dict_fname: String = parts[0].clone();
-        let name: String = parts[1].clone();
-        let meanings: String = parts[2].clone();
+        let mut parts = params.dict.as_str().split(';').map(|x| x.to_string());
+        let dict_fname: String = parts.next().unwrap();
+        let name: String = parts.next().unwrap();
+        let meanings: String = parts.next().unwrap();
         if conf.dicts != None {
             let dicts = conf.clone().dicts.unwrap();
             for elm in dicts.clone() {
@@ -94,6 +89,21 @@ fn main() {
                 {
                     dict_dirname = format!("{}/{}", params.config_dir, elm);
                     break;
+                }
+            }
+        }
+        if let Some(n) = Path::new(&dict_fname).parent() {
+            if !n.exists() {
+                match create_dir_all(n.to_str().unwrap()) {
+                    Ok(_) => (),
+                    Err(e) => {
+                        eprintln!(
+                            "{}vct: error: couldn't create required directories: {}{}",
+                            fg(Color::Red),
+                            e,
+                            sp(Special::Reset)
+                        );
+                    }
                 }
             }
         }
@@ -143,7 +153,7 @@ fn main() {
     if params.lang == String::new() {
         exit(0);
     }
-    let vocab = match load_vocab(params.config_dir, params.lang.clone(), conf) {
+    let vocab = match load_vocab(params.config_dir, params.lang.clone(), conf.clone()) {
         Ok(n) => n,
         Err(e) => {
             eprintln!(
@@ -155,7 +165,19 @@ fn main() {
             exit(1);
         }
     };
-    let result: f32 = question::question_vocab(params.lang, vocab.clone()) as f32;
+    let amount: String = match params.vocab.as_str() {
+        "all" => String::from("all"),
+        "one" => String::from("one"),
+        _ => match conf.vocab {
+            Some(n) => match n.as_str() {
+                "all" => String::from("all"),
+                "one" => String::from("one"),
+                _ => String::from("one"),
+            },
+            None => String::from("one"),
+        },
+    };
+    let result: f32 = question::question_vocab(params.lang, vocab.clone(), amount) as f32;
     let vocab_total: f32 = vocab.len() as f32;
     let total: u8 = ((result / vocab_total) * 100.0) as u8;
     let mut bar = ExtProgressBar::new("[=> ]", "result");

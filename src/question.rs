@@ -4,7 +4,7 @@ use rand::thread_rng;
 use std::io::{stdin, stdout, Write};
 use std::process::exit;
 
-pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>) -> usize {
+pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>, amount: String) -> usize {
     println!(
         "{}You will be learning {} {} vocabularies{}",
         fg(Color::Green),
@@ -69,6 +69,10 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>) -> usize {
             }
             if cur_vocab.get_meanings().contains(&captured) {
                 println!("{}correct!{}", fg(Color::Green), sp(Special::Reset));
+                if amount == *"one" {
+                    progress += 1;
+                    break;
+                }
                 meanings_done_count += 1;
                 meanings_done.push(captured);
             } else {

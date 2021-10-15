@@ -7,6 +7,7 @@ pub struct Params {
     pub config_dir: String,
     pub quit: bool,
     pub dict: String,
+    pub vocab: String,
 }
 
 impl Params {
@@ -21,6 +22,7 @@ impl Params {
             config_dir: format!("{}/vct", user_confdir),
             quit: false,
             dict: String::new(),
+            vocab: String::new(),
         }
     }
 }
@@ -75,6 +77,18 @@ pub fn load_params() -> Params {
                     eprintln!("vct: no parameters for dict operations provided");
                 }
             }
+            "-V" | "--vocab" => {
+                if (arguments.len() - 1) > idx {
+                    params.vocab = match arguments[idx + 1usize].clone().as_str() {
+                        "all" => String::from("all"),
+                        "one" => String::from("one"),
+                        n => {
+                            eprintln!("vct: warning: '{}' is not valid as a vocab parameter. Valid are 'one' and 'all'. Using default", n);
+                            String::new()
+                        }
+                    }
+                }
+            }
             _ => (),
         }
     }
@@ -91,5 +105,6 @@ Options:
   -d,--config-dir <confdir>: set a different config dir
   -l,--lang: set the lang to choose vocabulary from
   -D,--dict <dict> <name> <meanings>: add a new entry to an existing dict (meanings is a comma seperated list)
+  -v,--vocab <vocab>: sets how many vocabs should be trained (all or one)
 ";
-const VERSION_STR: &str = "vct: v1.1.1";
+const VERSION_STR: &str = "vct: v1.2.2";
