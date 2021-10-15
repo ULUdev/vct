@@ -25,5 +25,12 @@ To create a set of vocabulary use the `-D` or `--dict` flag followed by:
 if the language doesn't already exist it will be created.
 
 ## Configuration
-The configuration file currently only allows you to overwrite the default set of directories
-to search for dictionaries.
+The configuration file is in `$XDG_CONFIG_HOME/vct/config.toml` (if `$XDG_CONFIG_HOME` doesn't exist it will be in `~/.config/vct/config.toml`)
+and currently has only two fields:
+```toml
+dicts = ["dicts", "/path/to/systemwide_dicts"]
+vocab = "one"
+```
+- `dicts`: a list of strings/paths where dictionaries are. If the path doesn't start with a slash
+  it gets automatically put in the config directory
+- `vocab`: can be `one` or `all`. Defines how many meanings get learned per vocab (can be overwritten with `-V` or `--vocab`)
