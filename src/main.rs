@@ -177,13 +177,37 @@ fn main() {
             None => String::from("one"),
         },
     };
-    let result: f32 = question::question_vocab(params.lang, vocab.clone(), amount) as f32;
+    let (normal, add) = question::question_vocab(params.lang, vocab.clone(), amount);
+    let result: f32 = normal as f32;
     let vocab_total: f32 = vocab.len() as f32;
     let total: u8 = ((result / vocab_total) * 100.0) as u8;
-    let mut bar = ExtProgressBar::new("[=> ]", "result");
-    bar.set_progress(total);
+    let mut norm_bar = ExtProgressBar::new("[=> ]", "result");
+    norm_bar.set_progress(total);
     println!("\nyou had {} out of {} correct", result, vocab_total);
-    println!("{}\n", bar.render());
+    println!("{}\n", norm_bar.render());
+
+    if !params.adds {
+        exit(0);
+    } else if let Some(n) = conf.additionals {
+        if !n {
+            exit(0);
+        }
+    }
+    let add_result: f32 = add as f32;
+    let mut add_total: f32 = 0.0;
+    for i in vocab {
+        if let Some(n) = i.get_additionals() {
+            add_total += n.len() as f32;
+        }
+    }
+    let add_score: u8 = ((add_result / add_total) * 100.0) as u8;
+    let mut add_bar = ExtProgressBar::new("[=> ]", "(additional) result");
+    add_bar.set_progress(add_score);
+    println!(
+        "\n(additional) you had {} out of {} correct",
+        add_result, add_total
+    );
+    println!("\n{}", add_bar.render());
 
     exit(0);
 }

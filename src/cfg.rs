@@ -7,6 +7,7 @@ use std::io::Error;
 pub struct Config {
     pub dicts: Option<Vec<String>>,
     pub vocab: Option<String>,
+    pub additionals: Option<bool>,
 }
 
 /// load the configuration file

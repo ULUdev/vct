@@ -4,7 +4,11 @@ use rand::thread_rng;
 use std::io::{stdin, stdout, Write};
 use std::process::exit;
 
-pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>, amount: String) -> usize {
+pub fn question_vocab(
+    lang: String,
+    vocab: Vec<crate::dict::Vocab>,
+    amount: String,
+) -> (usize, usize) {
     println!(
         "{}You will be learning {} {} vocabularies{}",
         fg(Color::Green),
@@ -12,20 +16,21 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>, amount: Stri
         lang,
         sp(Special::Reset)
     );
-    let mut progress = 0usize;
+    let mut progress: usize = 0;
+    let mut add_progress: usize = 0;
     let mut done: Vec<&crate::dict::Vocab> = Vec::new();
     while done.len() != vocab.len() {
         let mut cur_vocab = match vocab.choose(&mut thread_rng()) {
             Some(n) => n,
             None => {
-                return 0usize;
+                return (0usize, 0usize);
             }
         };
         while done.contains(&cur_vocab) {
             cur_vocab = match vocab.choose(&mut thread_rng()) {
                 Some(n) => n,
                 None => {
-                    return 0usize;
+                    return (0usize, 0usize);
                 }
             };
         }
@@ -35,7 +40,7 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>, amount: Stri
         let mut so = stdout();
         while meanings != meanings_done_count {
             print!(
-                "{}what does '{}' mean? ({}/{}): {}",
+                "{}what does '{}' mean? ({}/{})? > {}",
                 fg(Color::White),
                 cur_vocab.get_name(),
                 meanings_done_count,
@@ -95,8 +100,62 @@ pub fn question_vocab(lang: String, vocab: Vec<crate::dict::Vocab>, amount: Stri
         if meanings == meanings_done_count {
             progress += 1;
         }
+        if let Some(adds) = cur_vocab.get_additionals() {
+            let mut adds_done: Vec<String> = Vec::new();
+            let mut idx: usize = 0;
+            while adds_done.len() < adds.len() {
+                let key = adds[idx].split(':').next().unwrap();
+                let value = adds[idx].split(':').nth(1).unwrap();
+                print!(
+                    "{}(additional) what is '{}' of '{}'? > {}",
+                    fg(Color::White),
+                    key,
+                    cur_vocab.get_name(),
+                    sp(Special::Reset)
+                );
+                let _ = match so.flush() {
+                    Ok(_) => (),
+                    Err(e) => {
+                        eprintln!(
+                            "{}vct: error when flushing stdout: {}{}",
+                            fg(Color::Red),
+                            e,
+                            sp(Special::Reset)
+                        );
+                    }
+                };
+                let mut input: String = String::new();
+                match stdin().read_line(&mut input) {
+                    Ok(_) => (),
+                    Err(e) => {
+                        eprintln!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset));
+                        exit(1);
+                    }
+                }
+                input = input.as_str().chars().filter(|x| x != &'\n').collect();
+                let captured: String = input.as_str().to_lowercase();
+                if captured == value {
+                    adds_done.push(adds[idx].clone());
+                    add_progress += 1;
+                    println!("{}Correct!{}", fg(Color::Green), sp(Special::Reset));
+                } else {
+                    println!(
+                        "{}Wrong! {}{}'{}'{}{} would have been right.{}",
+                        fg(Color::Red),
+                        fg(Color::White),
+                        sp(Special::Bold),
+                        value,
+                        sp(Special::Reset),
+                        fg(Color::Red),
+                        sp(Special::Reset)
+                    );
+                    adds_done.push(adds[idx].clone());
+                }
+                idx += 1;
+            }
+        }
         done.push(cur_vocab);
     }
 
-    progress
+    (progress, add_progress)
 }

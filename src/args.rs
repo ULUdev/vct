@@ -8,6 +8,7 @@ pub struct Params {
     pub quit: bool,
     pub dict: String,
     pub vocab: String,
+    pub adds: bool,
 }
 
 impl Params {
@@ -23,6 +24,7 @@ impl Params {
             quit: false,
             dict: String::new(),
             vocab: String::new(),
+            adds: true,
         }
     }
 }
@@ -73,6 +75,18 @@ pub fn load_params() -> Params {
                         arguments[idx + 2usize].clone(),
                         arguments[idx + 3usize].clone()
                     );
+                } else if (arguments.len() - 4) > idx {
+                    if arguments[idx + 4usize].clone().starts_with('-') {
+                        continue;
+                    } else {
+                        params.dict = format!(
+                            "{};{};{};{}",
+                            arguments[idx + 1usize].clone(),
+                            arguments[idx + 2usize].clone(),
+                            arguments[idx + 3usize].clone(),
+                            arguments[idx + 4usize].clone()
+                        );
+                    }
                 } else {
                     eprintln!("vct: no parameters for dict operations provided");
                 }
@@ -89,6 +103,9 @@ pub fn load_params() -> Params {
                     }
                 }
             }
+            "--noadds" => {
+                params.adds = false;
+            }
             _ => (),
         }
     }
@@ -104,7 +121,8 @@ Options:
   -c,--config <config>: set a different config path
   -d,--config-dir <confdir>: set a different config dir
   -l,--lang: set the lang to choose vocabulary from
-  -D,--dict <dict> <name> <meanings>: add a new entry to an existing dict (meanings is a comma seperated list)
+  -D,--dict <dict> <name> <meanings> [additionals]: add a new entry to an existing dict (meanings is a comma seperated list and additionals a comma seperated list of `key:value` pairs)
   -v,--vocab <vocab>: sets how many vocabs should be trained (all or one)
+  --noadds: disable additionals
 ";
-const VERSION_STR: &str = "vct: v1.2.2";
+const VERSION_STR: &str = "vct: v1.3.2-nightly";

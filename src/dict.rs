@@ -7,6 +7,7 @@ use std::path::Path;
 pub struct Vocab {
     name: String,
     meanings: Vec<String>,
+    additionals: Option<Vec<String>>,
 }
 
 impl Vocab {
@@ -16,8 +17,12 @@ impl Vocab {
     /// *`meanings`: all meanings to learn
     /// # Returns
     /// a new abstracted vocabulary
-    pub fn new(name: String, meanings: Vec<String>) -> Vocab {
-        Vocab { name, meanings }
+    pub fn new(name: String, meanings: Vec<String>, additionals: Option<Vec<String>>) -> Vocab {
+        Vocab {
+            name,
+            meanings,
+            additionals,
+        }
     }
 
     /// parse a String to a vocab
@@ -39,7 +44,20 @@ impl Vocab {
             .iter()
             .map(|meaning| meaning.to_lowercase())
             .collect();
-        Ok(Vocab::new(name, meanings))
+        if parts.len() > 2 {
+            let additionals_str: Vec<&str> = parts[2].split(',').collect();
+            let additionals: Vec<String> = additionals_str
+                .iter()
+                .map(|add| {
+                    let add_parts: Vec<&str> = add.split(':').collect();
+                    let key = add_parts[0];
+                    let val = add_parts[1];
+                    format!("{}:{}", key, val)
+                })
+                .collect();
+            return Ok(Vocab::new(name, meanings, Some(additionals)));
+        }
+        Ok(Vocab::new(name, meanings, None))
     }
 
     /// get the meanings of a vocabulary
@@ -54,6 +72,13 @@ impl Vocab {
     /// the vocab as a `String`
     pub fn get_name(&self) -> String {
         self.name.clone()
+    }
+
+    /// get the additionals to the vocab
+    /// # Returns
+    /// the additionals as an `Option<String>`
+    pub fn get_additionals(&self) -> Option<Vec<String>> {
+        self.additionals.clone()
     }
 }
 
