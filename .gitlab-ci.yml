@@ -7,7 +7,7 @@ cache:
 compile:
   stage: build
   script:
-    - cargo build
+    - make
   tags:
     - x86_64
 

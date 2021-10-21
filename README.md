@@ -1,7 +1,6 @@
 # VCT
 ## a vocabulary trainer for the terminal
 [![pipeline status](https://gitlab.sokoll.com/moritz/vct/badges/main/pipeline.svg)](https://gitlab.sokoll.com/moritz/vct/-/commits/main)
-[![coverage report](https://gitlab.sokoll.com/moritz/vct/badges/main/coverage.svg)](https://gitlab.sokoll.com/moritz/vct/-/commits/main)
 
 `vct` is a simple utility to learn vocabulary. It allows you to manage your vocabulary in categories and more.
 It will question you about the meanings of a vocabulary and optionally additional information (like gender if needed).
