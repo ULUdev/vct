@@ -21,6 +21,6 @@ test_help:
 test_version:
   stage: test
   script:
-    - ./target/release/vst --version
+    - ./target/release/vct --version
   tags:
     - x86_64
