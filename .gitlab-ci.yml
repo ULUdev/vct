@@ -1,0 +1,26 @@
+image: rust:1.56.0
+
+cache:
+  paths:
+    - target/*
+
+compile:
+  stage: build
+  script:
+    - cargo build
+  tags:
+    - x86_64
+
+test_help:
+  stage: test
+  script:
+    - ./target/release/vct --help
+  tags:
+    - x86_64
+
+test_version:
+  stage: test
+  script:
+    - ./target/release/vst --version
+  tags:
+    - x86_64

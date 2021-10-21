@@ -46,7 +46,7 @@ pub fn load_params() -> Params {
                 eprintln!("{}", VERSION_STR);
                 params.quit = true;
             }
-            "-c" | "--config" => {
+            "--config" => {
                 if (arguments.len() - 1) > idx {
                     params.config_path = arguments[idx + 1usize].clone();
                 } else {
@@ -60,14 +60,14 @@ pub fn load_params() -> Params {
                     eprintln!("vct: no lang provided")
                 }
             }
-            "-d" | "--config-dir" => {
+            "--config-dir" => {
                 if (arguments.len() - 1) > idx {
                     params.config_dir = arguments[idx + 1usize].clone();
                 } else {
                     eprintln!("vct: no config dir provided");
                 }
             }
-            "-D" | "--dict" => {
+            "-d" | "--dict" => {
                 if (arguments.len() - 3) > idx {
                     params.dict = format!(
                         "{};{};{}",
@@ -106,6 +106,9 @@ pub fn load_params() -> Params {
             "--noadds" => {
                 params.adds = Some(false);
             }
+            "--adds" => {
+                params.adds = Some(true);
+            }
             _ => (),
         }
     }
@@ -118,11 +121,12 @@ Usage:
 Options:
   -h,--help: print this help page and exit
   -v,--version: print the version and exit
-  -c,--config <config>: set a different config path
-  -d,--config-dir <confdir>: set a different config dir
+  --config <config>: set a different config path
+  --config-dir <confdir>: set a different config dir
   -l,--lang: set the lang to choose vocabulary from
-  -D,--dict <dict> <name> <meanings> [additionals]: add a new entry to an existing dict (meanings is a comma seperated list and additionals a comma seperated list of `key:value` pairs)
-  -v,--vocab <vocab>: sets how many vocabs should be trained (all or one)
+  -d,--dict <dict> <name> <meanings> [additionals]: add a new entry to an existing dict (meanings is a comma seperated list and additionals a comma seperated list of `key:value` pairs)
+  -V,--vocab <vocab>: sets how many vocabs should be trained (all or one)
   --noadds: disable additionals
+  --adds: enable additionals
 ";
-const VERSION_STR: &str = "vct: v1.3.3-nightly";
+const VERSION_STR: &str = "vct: v1.3.5-nightly";
