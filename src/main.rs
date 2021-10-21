@@ -177,7 +177,11 @@ fn main() {
             None => String::from("one"),
         },
     };
-    let (normal, add) = question::question_vocab(params.lang, vocab.clone(), amount);
+    let adds: bool = match params.adds {
+        Some(n) => n,
+        None => conf.additionals.unwrap_or(true),
+    };
+    let (normal, add) = question::question_vocab(params.lang, vocab.clone(), amount, adds);
     let result: f32 = normal as f32;
     let vocab_total: f32 = vocab.len() as f32;
     let total: u8 = ((result / vocab_total) * 100.0) as u8;
@@ -186,12 +190,8 @@ fn main() {
     println!("\nyou had {} out of {} correct", result, vocab_total);
     println!("{}\n", norm_bar.render());
 
-    if !params.adds {
+    if !adds {
         exit(0);
-    } else if let Some(n) = conf.additionals {
-        if !n {
-            exit(0);
-        }
     }
     let add_result: f32 = add as f32;
     let mut add_total: f32 = 0.0;

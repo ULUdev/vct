@@ -8,7 +8,7 @@ pub struct Params {
     pub quit: bool,
     pub dict: String,
     pub vocab: String,
-    pub adds: bool,
+    pub adds: Option<bool>,
 }
 
 impl Params {
@@ -24,7 +24,7 @@ impl Params {
             quit: false,
             dict: String::new(),
             vocab: String::new(),
-            adds: true,
+            adds: Some(true),
         }
     }
 }
@@ -104,7 +104,7 @@ pub fn load_params() -> Params {
                 }
             }
             "--noadds" => {
-                params.adds = false;
+                params.adds = Some(false);
             }
             _ => (),
         }
@@ -125,4 +125,4 @@ Options:
   -v,--vocab <vocab>: sets how many vocabs should be trained (all or one)
   --noadds: disable additionals
 ";
-const VERSION_STR: &str = "vct: v1.3.2-nightly";
+const VERSION_STR: &str = "vct: v1.3.3-nightly";

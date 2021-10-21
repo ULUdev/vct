@@ -8,6 +8,7 @@ pub fn question_vocab(
     lang: String,
     vocab: Vec<crate::dict::Vocab>,
     amount: String,
+    adds: bool,
 ) -> (usize, usize) {
     println!(
         "{}You will be learning {} {} vocabularies{}",
@@ -99,6 +100,10 @@ pub fn question_vocab(
         }
         if meanings == meanings_done_count {
             progress += 1;
+        }
+        if !adds {
+            done.push(cur_vocab);
+            continue;
         }
         if let Some(adds) = cur_vocab.get_additionals() {
             let mut adds_done: Vec<String> = Vec::new();
