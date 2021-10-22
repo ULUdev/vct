@@ -18,7 +18,9 @@ Stable is the preferred version to install. It may not have the newest and great
 Nightly is a kind of stable version but still in development. You will probably encounter bugs
 but it is usable. Nightly also receives updates more frequently than stable and you will get features earlier
 #### source
-1. clone
+1. clone the repository
+2. run `./configure.sh -p <prefix>` to set the prefix to install to (preferably `/usr/local`)
+3. run `make install`
 
 ## Usage
 ### Learning
