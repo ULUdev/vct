@@ -44,6 +44,7 @@ and currently has only two fields:
 dicts = ["dicts", "/path/to/systemwide_dicts"]
 vocab = "one"
 additionals = true
+clearlines = true
 ```
 - `dicts`: a list of strings/paths where dictionaries are. If the path doesn't start with a slash
   it gets automatically put in the config directory
