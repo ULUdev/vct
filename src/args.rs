@@ -150,4 +150,4 @@ Options:
   --clear: enable clearing lines (less unused screen space)
   --noclear: disable clearing lines (more unused screen space)
 ";
-const VERSION_STR: &str = "vct: v1.3.7";
+const VERSION_STR: &str = "vct: v1.3.8";

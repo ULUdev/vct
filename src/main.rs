@@ -83,23 +83,23 @@ fn main() {
         }
         if conf.dicts != None {
             let dicts = conf.clone().dicts.unwrap();
-            for elm in dicts.clone() {
-                if elm.starts_with('/') {
-                    if Path::new(elm.to_string().as_str()).exists() {
-                        dict_dirname = elm;
-                        break;
-                    }
-                } else if Path::new(format!("{}/{}", params.config_dir.clone(), elm).as_str())
-                    .exists()
-                {
-                    dict_dirname = format!("{}/{}", params.config_dir, elm);
-                    break;
+            if dicts.len() > 0 {
+                if dicts[0].clone().starts_with('/') {
+                    dict_dirname = dicts[0].clone();
+                } else {
+                    dict_dirname = format!("{}/{}", params.config_dir, dicts[0].clone());
                 }
             }
         }
         if let Some(n) = Path::new(&dict_fname).parent() {
             if !n.exists() {
-                match create_dir_all(n.to_str().unwrap()) {
+                let mut parent_path: String = n.clone().to_str().unwrap().to_string();
+                if parent_path.starts_with('/') {
+                    eprintln!("{}vct: warning: path cannot start with a '/'. Ignoring...{}", fg(Color::Yellow), sp(Special::Reset));
+                    parent_path = parent_path.as_str()[1..].to_string();
+                }
+                parent_path = format!("{}/{}", dict_dirname.clone(), parent_path);
+                match create_dir_all(parent_path.as_str()) {
                     Ok(_) => (),
                     Err(e) => {
                         eprintln!(
