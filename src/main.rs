@@ -8,6 +8,7 @@ mod args;
 mod cfg;
 mod dict;
 mod question;
+mod pretty_print;
 
 use args::{load_params, Params};
 use cfg::*;
@@ -75,7 +76,10 @@ fn main() {
         let mut parts = params.dict.as_str().split(';').map(|x| x.to_string());
         let dict_fname: String = parts.next().unwrap();
         let name: String = parts.next().unwrap();
-        let meanings: String = parts.next().unwrap();
+        let mut meanings: String = parts.next().unwrap();
+        if let Some(n) = parts.next() {
+            meanings.push_str(format!(";{}", n).as_str());
+        }
         if conf.dicts != None {
             let dicts = conf.clone().dicts.unwrap();
             for elm in dicts.clone() {
@@ -148,6 +152,18 @@ fn main() {
                 exit(1);
             }
         }
+    }
+
+    if let Some(n) = params.pretprin {
+        let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, conf.clone()) {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("{}vct: error while parsing vocabulary dictionary: {}{}", fg(Color::Red), e, sp(Special::Reset));
+                exit(1);
+            }
+        };
+        println!("{}", pretty_print::pretty_print(voc));
+        exit(0);
     }
 
     if params.lang == String::new() {

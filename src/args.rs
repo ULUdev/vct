@@ -9,6 +9,7 @@ pub struct Params {
     pub dict: String,
     pub vocab: String,
     pub adds: Option<bool>,
+    pub pretprin: Option<String>,
 }
 
 impl Params {
@@ -25,6 +26,7 @@ impl Params {
             dict: String::new(),
             vocab: String::new(),
             adds: Some(true),
+            pretprin: None,
         }
     }
 }
@@ -75,17 +77,18 @@ pub fn load_params() -> Params {
                         arguments[idx + 2usize].clone(),
                         arguments[idx + 3usize].clone()
                     );
-                } else if (arguments.len() - 4) > idx {
-                    if arguments[idx + 4usize].clone().starts_with('-') {
-                        continue;
-                    } else {
-                        params.dict = format!(
-                            "{};{};{};{}",
-                            arguments[idx + 1usize].clone(),
-                            arguments[idx + 2usize].clone(),
-                            arguments[idx + 3usize].clone(),
-                            arguments[idx + 4usize].clone()
-                        );
+                    if (arguments.len() - 4) > idx {
+                        if arguments[idx + 4usize].clone().starts_with('-') {
+                            continue;
+                        } else {
+                            params.dict = format!(
+                                "{};{};{};{}",
+                                arguments[idx + 1usize].clone(),
+                                arguments[idx + 2usize].clone(),
+                                arguments[idx + 3usize].clone(),
+                                arguments[idx + 4usize].clone()
+                            );
+                        }
                     }
                 } else {
                     eprintln!("vct: no parameters for dict operations provided");
@@ -109,6 +112,13 @@ pub fn load_params() -> Params {
             "--adds" => {
                 params.adds = Some(true);
             }
+            "-p" | "--pretty" => {
+                if (arguments.len() - 1) > idx {
+                    params.pretprin = Some(arguments[idx + 1usize].clone());
+                } else {
+                    eprintln!("vct: warning: no lang provided");
+                }
+            }
             _ => (),
         }
     }
@@ -123,10 +133,11 @@ Options:
   -v,--version: print the version and exit
   --config <config>: set a different config path
   --config-dir <confdir>: set a different config dir
-  -l,--lang: set the lang to choose vocabulary from
+  -l,--lang <lang>: set the lang to choose vocabulary from
   -d,--dict <dict> <name> <meanings> [additionals]: add a new entry to an existing dict (meanings is a comma seperated list and additionals a comma seperated list of `key:value` pairs)
   -V,--vocab <vocab>: sets how many vocabs should be trained (all or one)
   --noadds: disable additionals
   --adds: enable additionals
+  -p,--pretty <lang>: pretty print the vocabulary of <lang> and quit
 ";
 const VERSION_STR: &str = "vct: v1.3.5-nightly";

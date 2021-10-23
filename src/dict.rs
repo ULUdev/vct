@@ -50,6 +50,9 @@ impl Vocab {
                 .iter()
                 .map(|add| {
                     let add_parts: Vec<&str> = add.split(':').collect();
+                    if (add_parts.len() % 2 )!= 0 {
+                        return String::new();
+                    }
                     let key = add_parts[0];
                     let val = add_parts[1];
                     format!("{}:{}", key, val)
