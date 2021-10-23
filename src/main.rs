@@ -7,8 +7,8 @@ use std::process::exit;
 mod args;
 mod cfg;
 mod dict;
-mod question;
 mod pretty_print;
+mod question;
 
 use args::{load_params, Params};
 use cfg::*;
@@ -158,7 +158,12 @@ fn main() {
         let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, conf.clone()) {
             Ok(p) => p,
             Err(e) => {
-                eprintln!("{}vct: error while parsing vocabulary dictionary: {}{}", fg(Color::Red), e, sp(Special::Reset));
+                eprintln!(
+                    "{}vct: error while parsing vocabulary dictionary: {}{}",
+                    fg(Color::Red),
+                    e,
+                    sp(Special::Reset)
+                );
                 exit(1);
             }
         };
