@@ -1,3 +1,4 @@
+use btui::linux::console::*;
 use btui::{effects::*, pbar::ExtProgressBar, print::*};
 use std::fs::{create_dir_all, File, OpenOptions};
 use std::io::Write;
@@ -202,7 +203,20 @@ fn main() {
         Some(n) => n,
         None => conf.additionals.unwrap_or(true),
     };
-    let (normal, add) = question::question_vocab(params.lang, vocab.clone(), amount, adds);
+    let clearlines: bool = match params.clearlines {
+        Some(n) => n,
+        None => conf.clearlines.unwrap_or(false),
+    };
+    let (normal, add) =
+        question::question_vocab(params.lang, vocab.clone(), amount, adds, clearlines);
+
+    // if clearlines is enabled clear the line above
+    if clearlines {
+        cc_sequence(CursorControl::Up(1));
+        dc_sequence(DisplayControl::ClearLine);
+        cc_sequence(CursorControl::Col(1));
+    }
+
     let result: f32 = normal as f32;
     let vocab_total: f32 = vocab.len() as f32;
     let total: u8 = ((result / vocab_total) * 100.0) as u8;
@@ -222,7 +236,7 @@ fn main() {
         }
     }
     let add_score: u8 = ((add_result / add_total) * 100.0) as u8;
-    let mut add_bar = ExtProgressBar::new("[=> ]", "(additional) result");
+    let mut add_bar = ExtProgressBar::new("[=> ]", "result");
     add_bar.set_progress(add_score);
     println!(
         "\n(additional) you had {} out of {} correct",

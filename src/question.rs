@@ -1,3 +1,4 @@
+use btui::linux::console::*;
 use btui::{effects::*, print::*};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -9,6 +10,7 @@ pub fn question_vocab(
     vocab: Vec<crate::dict::Vocab>,
     amount: String,
     adds: bool,
+    clearlines: bool,
 ) -> (usize, usize) {
     println!(
         "{}You will be learning {} {} vocabularies{}",
@@ -69,6 +71,16 @@ pub fn question_vocab(
             }
             input = input.as_str().chars().filter(|x| x != &'\n').collect();
             let captured: String = input.as_str().to_lowercase();
+
+            // clear the screen if needed
+            if clearlines {
+                dc_sequence(DisplayControl::ClearLine);
+                cc_sequence(CursorControl::Up(1));
+                dc_sequence(DisplayControl::ClearLine);
+                cc_sequence(CursorControl::Up(1));
+                dc_sequence(DisplayControl::ClearLine);
+                cc_sequence(CursorControl::Col(1));
+            }
             if meanings_done.contains(&captured) {
                 println!("{}already used{}", fg(Color::Red), sp(Special::Reset));
                 continue;
@@ -139,6 +151,17 @@ pub fn question_vocab(
                 }
                 input = input.as_str().chars().filter(|x| x != &'\n').collect();
                 let captured: String = input.as_str().to_lowercase();
+                //
+                // clear the screen if needed
+                if clearlines {
+                    dc_sequence(DisplayControl::ClearLine);
+                    cc_sequence(CursorControl::Up(1));
+                    dc_sequence(DisplayControl::ClearLine);
+                    cc_sequence(CursorControl::Up(1));
+                    dc_sequence(DisplayControl::ClearLine);
+                    cc_sequence(CursorControl::Col(1));
+                }
+
                 if captured == value {
                     adds_done.push(adds[idx].clone());
                     add_progress += 1;

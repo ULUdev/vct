@@ -8,6 +8,7 @@ pub struct Config {
     pub dicts: Option<Vec<String>>,
     pub vocab: Option<String>,
     pub additionals: Option<bool>,
+    pub clearlines: Option<bool>,
 }
 
 /// load the configuration file

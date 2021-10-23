@@ -10,6 +10,7 @@ pub struct Params {
     pub vocab: String,
     pub adds: Option<bool>,
     pub pretprin: Option<String>,
+    pub clearlines: Option<bool>,
 }
 
 impl Params {
@@ -25,8 +26,9 @@ impl Params {
             quit: false,
             dict: String::new(),
             vocab: String::new(),
-            adds: Some(true),
+            adds: None,
             pretprin: None,
+            clearlines: None,
         }
     }
 }
@@ -119,6 +121,12 @@ pub fn load_params() -> Params {
                     eprintln!("vct: warning: no lang provided");
                 }
             }
+            "--clear" => {
+                params.clearlines = Some(true);
+            }
+            "--noclear" => {
+                params.clearlines = Some(false);
+            }
             _ => (),
         }
     }
@@ -139,5 +147,7 @@ Options:
   --noadds: disable additionals
   --adds: enable additionals
   -p,--pretty <lang>: pretty print the vocabulary of <lang> and quit
+  --clear: enable clearing lines (less unused screen space)
+  --noclear: disable clearing lines (more unused screen space)
 ";
-const VERSION_STR: &str = "vct: v1.3.5-nightly";
+const VERSION_STR: &str = "vct: v1.3.6";

@@ -48,7 +48,8 @@ additionals = true
 - `dicts`: a list of strings/paths where dictionaries are. If the path doesn't start with a slash
   it gets automatically put in the config directory
 - `vocab`: can be `one` or `all`. Defines how many meanings get learned per vocab (can be overwritten with `-V` or `--vocab`)
-- `additionals`: can be `true` or `false`. Tells `vct` whether to ask you for additional information about the vocabulary (can be overwritten with `--adds` and `--noadds`)
+- `additionals`: can be `true` or `false`. Tells `vct` whether or not to ask you for additional information about the vocabulary (can be overwritten with `--adds` and `--noadds`)
+- `clearlines`: can be `true` or `false`. Tells `vct` whether or not to clear unused lines (can be overwritten with `--clear` and `--noclear`)
 
 ## Development
 It is currently only developed by me.

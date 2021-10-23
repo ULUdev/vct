@@ -11,7 +11,7 @@ pub fn pretty_print(vocab: Vec<Vocab>) -> String {
             .iter()
             .map(|x| format!("  {}- {}{}\n", fg(Color::Blue), x, sp(Special::Reset)))
             .collect();
-        out.push_str(format!("{}{}:\n{}", fg(Color::Green), voc.get_name(), meanings).as_str());
+        out.push_str(format!("\n{}{}:\n{}", fg(Color::Green), voc.get_name(), meanings).as_str());
         if let Some(n) = voc.get_additionals() {
             let adds: String = n
                 .iter()
