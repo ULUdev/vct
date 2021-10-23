@@ -165,7 +165,7 @@ pub fn question_vocab(
                 if captured == value {
                     adds_done.push(adds[idx].clone());
                     add_progress += 1;
-                    println!("{}Correct!{}", fg(Color::Green), sp(Special::Reset));
+                    println!("{}correct!{}", fg(Color::Green), sp(Special::Reset));
                 } else {
                     println!(
                         "{}Wrong! {}{}'{}'{}{} would have been right.{}",
