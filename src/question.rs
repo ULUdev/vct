@@ -69,7 +69,7 @@ pub fn question_vocab(
                     exit(1);
                 }
             }
-            input = input.as_str().chars().filter(|x| x != &'\n').collect();
+            input = input.as_str().trim_end().to_string();
             let captured: String = input.as_str().to_lowercase();
 
             // clear the screen if needed
@@ -149,7 +149,7 @@ pub fn question_vocab(
                         exit(1);
                     }
                 }
-                input = input.as_str().chars().filter(|x| x != &'\n').collect();
+                input = input.as_str().trim_end().to_string();
                 let captured: String = input.as_str().to_lowercase();
                 //
                 // clear the screen if needed
