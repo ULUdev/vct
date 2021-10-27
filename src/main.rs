@@ -219,7 +219,7 @@ fn main() {
 
     let result: f32 = normal as f32;
     let vocab_total: f32 = vocab.len() as f32;
-    let total: u8 = ((result / vocab_total) * 100.0) as u8;
+    let total: f32 = ((result / vocab_total) * 100.0) as f32;
     let mut norm_bar = ExtProgressBar::new("[=> ]", "result");
     norm_bar.set_progress(total);
     println!("\nyou had {} out of {} correct", result, vocab_total);
@@ -235,7 +235,7 @@ fn main() {
             add_total += n.len() as f32;
         }
     }
-    let add_score: u8 = ((add_result / add_total) * 100.0) as u8;
+    let add_score: f32 = ((add_result / add_total) * 100.0) as f32;
     let mut add_bar = ExtProgressBar::new("[=> ]", "result");
     add_bar.set_progress(add_score);
     println!(

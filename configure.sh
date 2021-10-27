@@ -24,6 +24,9 @@ main() {
 	local MAKEFILE PREFIX
 	deps
 	args "$@"
+	echo "generating version from Cargo.toml..."
+	echo "$(grep -v 'const VERSION_STR' src/args.rs)
+const VERSION_STR: &str = \"vct: v$(grep 'version' Cargo.toml | sed 's/version = "\(.*\)"/\1/')\";" > src/args.rs
 	PREFIX="PREFIX=$PREFIX
 "
 	MAKEFILE='all: release
