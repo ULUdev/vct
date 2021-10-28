@@ -2,7 +2,7 @@ use btui::{effects::*, print::*};
 use btui::Terminal;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use std::io::{stdin, stdout, Write};
+use std::io::{stdout, Write};
 use std::process::exit;
 
 pub fn question_vocab(
@@ -62,15 +62,13 @@ pub fn question_vocab(
                     )).unwrap();
                 }
             };
-            let mut input: String = String::new();
-            match stdin().read_line(&mut input) {
-                Ok(_) => (),
+            let input: String = match term.read_line_trimmed() {
+                Ok(n) => n,
                 Err(e) => {
                     term.eprintln(format!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset))).unwrap();
                     exit(1);
                 }
-            }
-            input = input.as_str().trim_end().to_string();
+            };
             let captured: String = input.as_str().to_lowercase();
 
             // clear the screen if needed
@@ -142,15 +140,13 @@ pub fn question_vocab(
                         )).unwrap();
                     }
                 };
-                let mut input: String = String::new();
-                match stdin().read_line(&mut input) {
-                    Ok(_) => (),
+                let input: String = match term.read_line_trimmed() {
+                    Ok(n) => n,
                     Err(e) => {
                         term.eprintln(format!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset))).unwrap();
                         exit(1);
                     }
-                }
-                input = input.as_str().trim_end().to_string();
+                };
                 let captured: String = input.as_str().to_lowercase();
                 //
                 // clear the screen if needed

@@ -11,4 +11,4 @@ install: release
 	mv target/release/vct $(PREFIX)/bin/
 
 clean:
-	rm -rf target/release
+	cargo clean

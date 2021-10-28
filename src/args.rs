@@ -152,4 +152,5 @@ Options:
   --clear: enable clearing lines (less unused screen space)
   --noclear: disable clearing lines (more unused screen space)
 ";
-const VERSION_STR: &str = "vct: v1.3.11-nightly";
+const VERSION_STR: &str = "vct: v1.3.12-nightly
+commit: 59a8ce1901f089ebbfcd4514cb5b3b5f1802ed95";
