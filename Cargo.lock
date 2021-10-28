@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "btui"
-version = "0.6.9"
+version = "0.6.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f0cfac910e4f09ee8b9f0a7defd092e14402fcaa64de30d54fd659fa1863e1c"
+checksum = "dfd8f2199701b222474b91b149bcb5f8078f4bc73c0fba9f2740e358655eecb7"
 
 [[package]]
 name = "cfg-if"
@@ -140,7 +140,7 @@ checksum = "8ccb82d61f80a663efe1f787a51b16b5a51e3314d6ac365b08639f52387b33f3"
 
 [[package]]
 name = "vct"
-version = "1.3.10-nightly"
+version = "1.3.11-nightly"
 dependencies = [
  "btui",
  "rand",

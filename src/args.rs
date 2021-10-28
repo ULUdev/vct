@@ -134,6 +134,8 @@ pub fn load_params() -> Params {
 }
 
 const HELP_STR: &str = "
+Synopsis:
+    vct [-hv] [-l <lang>] [-p <lang>]
 Usage:
   vct [OPTIONS]
 Options:
@@ -150,4 +152,4 @@ Options:
   --clear: enable clearing lines (less unused screen space)
   --noclear: disable clearing lines (more unused screen space)
 ";
-const VERSION_STR: &str = "vct: v1.3.10-nightly";
+const VERSION_STR: &str = "vct: v1.3.11-nightly";

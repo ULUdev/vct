@@ -1,5 +1,5 @@
-use btui::linux::console::*;
 use btui::{effects::*, print::*};
+use btui::Terminal;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::io::{stdin, stdout, Write};
@@ -12,16 +12,17 @@ pub fn question_vocab(
     adds: bool,
     clearlines: bool,
 ) -> (usize, usize) {
-    println!(
+    let term: Terminal = Terminal::default();
+    let mut progress: usize = 0;
+    let mut add_progress: usize = 0;
+    let mut done: Vec<&crate::dict::Vocab> = Vec::new();
+    term.println(format!(
         "{}You will be learning {} {} vocabularies{}",
         fg(Color::Green),
         vocab.len(),
         lang,
         sp(Special::Reset)
-    );
-    let mut progress: usize = 0;
-    let mut add_progress: usize = 0;
-    let mut done: Vec<&crate::dict::Vocab> = Vec::new();
+    )).unwrap();
     while done.len() != vocab.len() {
         let mut cur_vocab = match vocab.choose(&mut thread_rng()) {
             Some(n) => n,
@@ -42,30 +43,30 @@ pub fn question_vocab(
         let mut meanings_done: Vec<String> = Vec::new();
         let mut so = stdout();
         while meanings != meanings_done_count {
-            print!(
+            term.print(format!(
                 "{}what does '{}' mean? ({}/{})? > {}",
                 fg(Color::White),
                 cur_vocab.get_name(),
                 meanings_done_count,
                 meanings,
                 sp(Special::Reset)
-            );
+            )).unwrap();
             let _ = match so.flush() {
                 Ok(_) => (),
                 Err(e) => {
-                    eprintln!(
+                    term.eprintln(format!(
                         "{}vct: error when flushing stdout: {}{}",
                         fg(Color::Red),
                         e,
                         sp(Special::Reset)
-                    );
+                    )).unwrap();
                 }
             };
             let mut input: String = String::new();
             match stdin().read_line(&mut input) {
                 Ok(_) => (),
                 Err(e) => {
-                    eprintln!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset));
+                    term.eprintln(format!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset))).unwrap();
                     exit(1);
                 }
             }
@@ -74,19 +75,19 @@ pub fn question_vocab(
 
             // clear the screen if needed
             if clearlines {
-                dc_sequence(DisplayControl::ClearLine);
-                cc_sequence(CursorControl::Up(1));
-                dc_sequence(DisplayControl::ClearLine);
-                cc_sequence(CursorControl::Up(1));
-                dc_sequence(DisplayControl::ClearLine);
-                cc_sequence(CursorControl::Col(1));
+                term.move_cursor(0, -1).unwrap();
+                term.clear_line().unwrap();
+                term.move_cursor(0, -1).unwrap();
+                //term.clear_line().unwrap();
+                term.clear_line().unwrap();
+                term.set_cursor_x(1).unwrap();
             }
             if meanings_done.contains(&captured) {
-                println!("{}already used{}", fg(Color::Red), sp(Special::Reset));
+                term.println(format!("{}already used{}", fg(Color::Red), sp(Special::Reset))).unwrap();
                 continue;
             }
             if cur_vocab.get_meanings().contains(&captured) {
-                println!("{}correct!{}", fg(Color::Green), sp(Special::Reset));
+                term.println(format!("{}correct!{}", fg(Color::Green), sp(Special::Reset))).unwrap();
                 if amount == *"one" {
                     progress += 1;
                     break;
@@ -98,7 +99,7 @@ pub fn question_vocab(
                 for meaning in cur_vocab.get_meanings()[1..].to_vec() {
                     correct_meanings_string.push_str(format!(", {}", meaning).as_str());
                 }
-                println!(
+                term.println(format!(
                     "{}wrong! {}{}{:?}{} would have been right{}",
                     fg(Color::Red),
                     fg(Color::White),
@@ -106,7 +107,7 @@ pub fn question_vocab(
                     correct_meanings_string,
                     fg(Color::Red),
                     sp(Special::Reset)
-                );
+                )).unwrap();
                 break;
             }
         }
@@ -123,29 +124,29 @@ pub fn question_vocab(
             while adds_done.len() < adds.len() {
                 let key = adds[idx].split(':').next().unwrap();
                 let value = adds[idx].split(':').nth(1).unwrap();
-                print!(
+                term.print(format!(
                     "{}(additional) what is '{}' of '{}'? > {}",
                     fg(Color::White),
                     key,
                     cur_vocab.get_name(),
                     sp(Special::Reset)
-                );
+                )).unwrap();
                 let _ = match so.flush() {
                     Ok(_) => (),
                     Err(e) => {
-                        eprintln!(
+                        term.eprintln(format!(
                             "{}vct: error when flushing stdout: {}{}",
                             fg(Color::Red),
                             e,
                             sp(Special::Reset)
-                        );
+                        )).unwrap();
                     }
                 };
                 let mut input: String = String::new();
                 match stdin().read_line(&mut input) {
                     Ok(_) => (),
                     Err(e) => {
-                        eprintln!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset));
+                        term.eprintln(format!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset))).unwrap();
                         exit(1);
                     }
                 }
@@ -154,20 +155,20 @@ pub fn question_vocab(
                 //
                 // clear the screen if needed
                 if clearlines {
-                    dc_sequence(DisplayControl::ClearLine);
-                    cc_sequence(CursorControl::Up(1));
-                    dc_sequence(DisplayControl::ClearLine);
-                    cc_sequence(CursorControl::Up(1));
-                    dc_sequence(DisplayControl::ClearLine);
-                    cc_sequence(CursorControl::Col(1));
+                    term.clear_line().unwrap();
+                    term.move_cursor(0, -1).unwrap();
+                    term.clear_line().unwrap();
+                    term.move_cursor(0, -1).unwrap();
+                    term.clear_line().unwrap();
+                    term.set_cursor_x(1).unwrap();
                 }
 
                 if captured == value {
                     adds_done.push(adds[idx].clone());
                     add_progress += 1;
-                    println!("{}correct!{}", fg(Color::Green), sp(Special::Reset));
+                    term.println(format!("{}correct!{}", fg(Color::Green), sp(Special::Reset))).unwrap();
                 } else {
-                    println!(
+                    term.println(format!(
                         "{}Wrong! {}{}'{}'{}{} would have been right.{}",
                         fg(Color::Red),
                         fg(Color::White),
@@ -176,7 +177,7 @@ pub fn question_vocab(
                         sp(Special::Reset),
                         fg(Color::Red),
                         sp(Special::Reset)
-                    );
+                    )).unwrap();
                     adds_done.push(adds[idx].clone());
                 }
                 idx += 1;
