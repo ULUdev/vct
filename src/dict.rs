@@ -1,8 +1,8 @@
 use crate::cfg::*;
+use rusqlite::{Connection, Result};
 use std::fs::read_to_string;
 use std::io::{Error, ErrorKind};
 use std::path::Path;
-use rusqlite::{Connection, Result};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vocab {
@@ -86,8 +86,12 @@ impl Vocab {
     }
 }
 
-pub fn load_vocab(config_dir: String, lang: String, conf: Config, usedb: bool) -> Result<Vec<Vocab>, Error> {
-    
+pub fn load_vocab(
+    config_dir: String,
+    lang: String,
+    conf: Config,
+    usedb: bool,
+) -> Result<Vec<Vocab>, Error> {
     if usedb {
         let mut path: String = match conf.dbpath {
             Some(n) => n,
@@ -109,7 +113,13 @@ pub fn load_vocab(config_dir: String, lang: String, conf: Config, usedb: bool) -
             }
         }
 
-        let mut sel = match db.prepare(format!("SELECT name, meanings, additionals FROM vocab WHERE (lang == {})", lang).as_str()) {
+        let mut sel = match db.prepare(
+            format!(
+                "SELECT name, meanings, additionals FROM vocab WHERE (lang == {})",
+                lang
+            )
+            .as_str(),
+        ) {
             Ok(n) => n,
             Err(_) => {
                 return Err(Error::new(ErrorKind::Other, "problem with the language provided and the database. Maybe your vocab is in a dict file? Try `--nodb` to disable the database"));
@@ -124,10 +134,14 @@ pub fn load_vocab(config_dir: String, lang: String, conf: Config, usedb: bool) -
                 out = match Vocab::from_string(format!("{};{}", name.unwrap(), meanings.unwrap())) {
                     Ok(n) => n,
                     Err(_) => Vocab::new(String::new(), Vec::new(), None),
-
                 };
             } else {
-                out = match Vocab::from_string(format!("{};{};{}", name.unwrap(), meanings.unwrap(), additionals.unwrap())) {
+                out = match Vocab::from_string(format!(
+                    "{};{};{}",
+                    name.unwrap(),
+                    meanings.unwrap(),
+                    additionals.unwrap()
+                )) {
                     Ok(n) => n,
                     Err(_) => Vocab::new(String::new(), Vec::new(), None),
                 };
@@ -136,7 +150,6 @@ pub fn load_vocab(config_dir: String, lang: String, conf: Config, usedb: bool) -
         });
         let vocab: Vec<Vocab> = vocab_iter.unwrap().map(|x| x.unwrap()).collect();
         return Ok(vocab);
-
     }
 
     let mut dict_dirname: String = format!("{}/dicts", config_dir);

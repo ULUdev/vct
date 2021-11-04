@@ -45,6 +45,8 @@ dicts = ["dicts", "/path/to/systemwide_dicts"]
 vocab = "one"
 additionals = true
 clearlines = true
+database = false # database is not recommended currently since there is a lack of support for writing and migrating from dict files
+dbpath = "vocab.db"
 ```
 - `dicts`: a list of strings/paths where dictionaries are. If the path doesn't start with a slash
   it gets automatically put in the config directory
