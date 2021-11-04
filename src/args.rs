@@ -11,6 +11,7 @@ pub struct Params {
     pub adds: Option<bool>,
     pub pretprin: Option<String>,
     pub clearlines: Option<bool>,
+    pub usedb: Option<bool>,
 }
 
 impl Params {
@@ -29,6 +30,7 @@ impl Params {
             adds: None,
             pretprin: None,
             clearlines: None,
+            usedb: None,
         }
     }
 }
@@ -127,6 +129,12 @@ pub fn load_params() -> Params {
             "--noclear" => {
                 params.clearlines = Some(false);
             }
+            "--db" => {
+                params.usedb = Some(true);
+            }
+            "--nodb" => {
+                params.usedb = Some(false);
+            }
             _ => (),
         }
     }
@@ -152,5 +160,4 @@ Options:
   --clear: enable clearing lines (less unused screen space)
   --noclear: disable clearing lines (more unused screen space)
 ";
-const VERSION_STR: &str = "vct: v1.3.12-nightly
-commit: 59a8ce1901f089ebbfcd4514cb5b3b5f1802ed95";
+const VERSION_STR: &str = "vct: v1.4.12-nightly";

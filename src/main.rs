@@ -1,5 +1,5 @@
-use btui::{effects::*, pbar::ExtProgressBar, print::*};
 use btui::Terminal;
+use btui::{effects::*, pbar::ExtProgressBar, print::*};
 use std::fs::{create_dir_all, File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
@@ -31,8 +31,9 @@ fn main() {
                 term.eprintln(format!(
                     "{}vct: couldn't create config dir{}",
                     fg(Color::Red),
-                    sp(Special::Reset))
-                ).unwrap();
+                    sp(Special::Reset)
+                ))
+                .unwrap();
                 exit(1);
             }
         }
@@ -42,8 +43,9 @@ fn main() {
                 term.eprintln(format!(
                     "{}vct: failed creating config file{}",
                     fg(Color::Red),
-                    sp(Special::Reset))
-                ).unwrap();
+                    sp(Special::Reset)
+                ))
+                .unwrap();
                 exit(1);
             }
         }
@@ -55,8 +57,9 @@ fn main() {
                 term.eprintln(format!(
                     "{}vct: couldn't create dicts dir{}",
                     fg(Color::Red),
-                    sp(Special::Reset))
-                ).unwrap();
+                    sp(Special::Reset)
+                ))
+                .unwrap();
                 exit(1);
             }
         }
@@ -69,8 +72,9 @@ fn main() {
                 red = fg(Color::Red),
                 bold = sp(Special::Bold),
                 err = e,
-                reset = sp(Special::Reset))
-            ).unwrap();
+                reset = sp(Special::Reset)
+            ))
+            .unwrap();
             exit(1);
         }
     };
@@ -84,7 +88,7 @@ fn main() {
         }
         if conf.dicts != None {
             let dicts = conf.clone().dicts.unwrap();
-            if dicts.len() > 0 {
+            if !dicts.is_empty() {
                 if dicts[0].clone().starts_with('/') {
                     dict_dirname = dicts[0].clone();
                 } else {
@@ -94,12 +98,17 @@ fn main() {
         }
         if let Some(n) = Path::new(&dict_fname).parent() {
             if !n.exists() {
-                let mut parent_path: String = n.clone().to_str().unwrap().to_string();
+                let mut parent_path: String = (*n).to_str().unwrap().to_string();
                 if parent_path.starts_with('/') {
-                    term.eprintln(format!("{}vct: warning: path cannot start with a '/'. Ignoring...{}", fg(Color::Yellow), sp(Special::Reset))).unwrap();
+                    term.eprintln(format!(
+                        "{}vct: warning: path cannot start with a '/'. Ignoring...{}",
+                        fg(Color::Yellow),
+                        sp(Special::Reset)
+                    ))
+                    .unwrap();
                     parent_path = parent_path.as_str()[1..].to_string();
                 }
-                parent_path = format!("{}/{}", dict_dirname.clone(), parent_path);
+                parent_path = format!("{}/{}", dict_dirname, parent_path);
                 match create_dir_all(parent_path.as_str()) {
                     Ok(_) => (),
                     Err(e) => {
@@ -107,8 +116,9 @@ fn main() {
                             "{}vct: error: couldn't create required directories: {}{}",
                             fg(Color::Red),
                             e,
-                            sp(Special::Reset))
-                        ).unwrap();
+                            sp(Special::Reset)
+                        ))
+                        .unwrap();
                     }
                 }
             }
@@ -121,8 +131,9 @@ fn main() {
                         "{}vct: error creating file: {}{}",
                         fg(Color::Red),
                         e,
-                        sp(Special::Reset))
-                    ).unwrap();
+                        sp(Special::Reset)
+                    ))
+                    .unwrap();
                     exit(1);
                 }
             };
@@ -138,7 +149,8 @@ fn main() {
                     fg(Color::Red),
                     e,
                     sp(Special::Reset)
-                )).unwrap();
+                ))
+                .unwrap();
                 exit(1);
             }
         };
@@ -149,42 +161,49 @@ fn main() {
                     "{}vct: error writing to file: {:?}{}",
                     fg(Color::Red),
                     e,
-                    sp(Special::Reset))
-                ).unwrap();
+                    sp(Special::Reset)
+                ))
+                .unwrap();
                 exit(1);
             }
         }
     }
 
+    let usedb: bool = match params.usedb {
+        Some(n) => n,
+        None => conf.database.unwrap_or(false),
+    };
     if let Some(n) = params.pretprin {
-        let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, conf.clone()) {
+        let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, conf.clone(), usedb) {
             Ok(p) => p,
             Err(e) => {
                 term.eprintln(format!(
                     "{}vct: error while parsing vocabulary dictionary: {}{}",
                     fg(Color::Red),
                     e,
-                    sp(Special::Reset))
-                ).unwrap();
+                    sp(Special::Reset)
+                ))
+                .unwrap();
                 exit(1);
             }
         };
-        term.println(format!("{}", pretty_print::pretty_print(voc))).unwrap();
+        term.println(pretty_print::pretty_print(voc)).unwrap();
         exit(0);
     }
 
     if params.lang == String::new() {
         exit(0);
     }
-    let vocab = match load_vocab(params.config_dir, params.lang.clone(), conf.clone()) {
+    let vocab = match load_vocab(params.config_dir.clone(), params.lang.clone(), conf.clone(), usedb) {
         Ok(n) => n,
         Err(e) => {
             term.eprintln(format!(
                 "{}vct: error while parsing vocabulary dictionary: {}{}",
                 fg(Color::Red),
                 e,
-                sp(Special::Reset))
-            ).unwrap();
+                sp(Special::Reset)
+            ))
+            .unwrap();
             exit(1);
         }
     };
@@ -223,7 +242,11 @@ fn main() {
     let total: f32 = ((result / vocab_total) * 100.0) as f32;
     let mut norm_bar = ExtProgressBar::new("[=> ]", "result");
     norm_bar.set_progress(total);
-    term.println(format!("\nyou had {} out of {} correct", result, vocab_total)).unwrap();
+    term.println(format!(
+        "\nyou had {} out of {} correct",
+        result, vocab_total
+    ))
+    .unwrap();
     term.println(format!("{}\n", norm_bar.render())).unwrap();
 
     if !adds {
@@ -242,7 +265,8 @@ fn main() {
     term.println(format!(
         "\n(additional) you had {} out of {} correct",
         add_result, add_total
-    )).unwrap();
+    ))
+    .unwrap();
     term.println(format!("\n{}", add_bar.render())).unwrap();
 
     exit(0);

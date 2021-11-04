@@ -9,6 +9,8 @@ pub struct Config {
     pub vocab: Option<String>,
     pub additionals: Option<bool>,
     pub clearlines: Option<bool>,
+    pub database: Option<bool>,
+    pub dbpath: Option<String>,
 }
 
 /// load the configuration file

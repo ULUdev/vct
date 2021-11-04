@@ -2,6 +2,7 @@ use crate::cfg::*;
 use std::fs::read_to_string;
 use std::io::{Error, ErrorKind};
 use std::path::Path;
+use rusqlite::{Connection, Result};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vocab {
@@ -85,7 +86,59 @@ impl Vocab {
     }
 }
 
-pub fn load_vocab(config_dir: String, lang: String, conf: Config) -> Result<Vec<Vocab>, Error> {
+pub fn load_vocab(config_dir: String, lang: String, conf: Config, usedb: bool) -> Result<Vec<Vocab>, Error> {
+    
+    if usedb {
+        let mut path: String = match conf.dbpath {
+            Some(n) => n,
+            None => String::from("db.sqlite"),
+        };
+        if !path.starts_with('/') {
+            path = format!("{}/{}", config_dir, path);
+        }
+        let db = match Connection::open(path.as_str()) {
+            Ok(n) => n,
+            Err(_) => {
+                return Err(Error::new(ErrorKind::Other, "error connecting to database"));
+            }
+        };
+        match db.execute("CREATE TABLE IF NOT EXISTS vocab (lang VARCHAR(256) NOT NULL, name VARCHAR(256) NOT NULL, meanings VARCHAR(256) NOT NULL, additionals VARCHAR(256))", []) {
+            Ok(_) => (),
+            Err(_) => {
+                return Err(Error::new(ErrorKind::Other, "error while creating database"));
+            }
+        }
+
+        let mut sel = match db.prepare(format!("SELECT name, meanings, additionals FROM vocab WHERE (lang == {})", lang).as_str()) {
+            Ok(n) => n,
+            Err(_) => {
+                return Err(Error::new(ErrorKind::Other, "problem with the language provided and the database. Maybe your vocab is in a dict file? Try `--nodb` to disable the database"));
+            }
+        };
+        let vocab_iter = sel.query_map([], |row| {
+            let out: Vocab;
+            let name: Result<String, rusqlite::Error> = row.get(0);
+            let meanings: Result<String, rusqlite::Error> = row.get(1);
+            let additionals: Result<String, rusqlite::Error> = row.get(2);
+            if let Err(_) = additionals {
+                out = match Vocab::from_string(format!("{};{}", name.unwrap(), meanings.unwrap())) {
+                    Ok(n) => n,
+                    Err(_) => Vocab::new(String::new(), Vec::new(), None),
+
+                };
+            } else {
+                out = match Vocab::from_string(format!("{};{};{}", name.unwrap(), meanings.unwrap(), additionals.unwrap())) {
+                    Ok(n) => n,
+                    Err(_) => Vocab::new(String::new(), Vec::new(), None),
+                };
+            }
+            Ok(out)
+        });
+        let vocab: Vec<Vocab> = vocab_iter.unwrap().map(|x| x.unwrap()).collect();
+        return Ok(vocab);
+
+    }
+
     let mut dict_dirname: String = format!("{}/dicts", config_dir);
     if conf.dicts != None {
         let dicts = conf.dicts.unwrap();

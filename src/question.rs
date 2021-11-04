@@ -1,5 +1,5 @@
-use btui::{effects::*, print::*};
 use btui::Terminal;
+use btui::{effects::*, print::*};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::io::{stdout, Write};
@@ -22,7 +22,8 @@ pub fn question_vocab(
         vocab.len(),
         lang,
         sp(Special::Reset)
-    )).unwrap();
+    ))
+    .unwrap();
     while done.len() != vocab.len() {
         let mut cur_vocab = match vocab.choose(&mut thread_rng()) {
             Some(n) => n,
@@ -50,7 +51,8 @@ pub fn question_vocab(
                 meanings_done_count,
                 meanings,
                 sp(Special::Reset)
-            )).unwrap();
+            ))
+            .unwrap();
             let _ = match so.flush() {
                 Ok(_) => (),
                 Err(e) => {
@@ -59,13 +61,20 @@ pub fn question_vocab(
                         fg(Color::Red),
                         e,
                         sp(Special::Reset)
-                    )).unwrap();
+                    ))
+                    .unwrap();
                 }
             };
             let input: String = match term.read_line_trimmed() {
                 Ok(n) => n,
                 Err(e) => {
-                    term.eprintln(format!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset))).unwrap();
+                    term.eprintln(format!(
+                        "{}vct: error: {}{}",
+                        fg(Color::Red),
+                        e,
+                        sp(Special::Reset)
+                    ))
+                    .unwrap();
                     exit(1);
                 }
             };
@@ -81,11 +90,21 @@ pub fn question_vocab(
                 term.set_cursor_x(1).unwrap();
             }
             if meanings_done.contains(&captured) {
-                term.println(format!("{}already used{}", fg(Color::Red), sp(Special::Reset))).unwrap();
+                term.println(format!(
+                    "{}already used{}",
+                    fg(Color::Red),
+                    sp(Special::Reset)
+                ))
+                .unwrap();
                 continue;
             }
             if cur_vocab.get_meanings().contains(&captured) {
-                term.println(format!("{}correct!{}", fg(Color::Green), sp(Special::Reset))).unwrap();
+                term.println(format!(
+                    "{}correct!{}",
+                    fg(Color::Green),
+                    sp(Special::Reset)
+                ))
+                .unwrap();
                 if amount == *"one" {
                     progress += 1;
                     break;
@@ -105,7 +124,8 @@ pub fn question_vocab(
                     correct_meanings_string,
                     fg(Color::Red),
                     sp(Special::Reset)
-                )).unwrap();
+                ))
+                .unwrap();
                 break;
             }
         }
@@ -128,7 +148,8 @@ pub fn question_vocab(
                     key,
                     cur_vocab.get_name(),
                     sp(Special::Reset)
-                )).unwrap();
+                ))
+                .unwrap();
                 let _ = match so.flush() {
                     Ok(_) => (),
                     Err(e) => {
@@ -137,13 +158,20 @@ pub fn question_vocab(
                             fg(Color::Red),
                             e,
                             sp(Special::Reset)
-                        )).unwrap();
+                        ))
+                        .unwrap();
                     }
                 };
                 let input: String = match term.read_line_trimmed() {
                     Ok(n) => n,
                     Err(e) => {
-                        term.eprintln(format!("{}vct: error: {}{}", fg(Color::Red), e, sp(Special::Reset))).unwrap();
+                        term.eprintln(format!(
+                            "{}vct: error: {}{}",
+                            fg(Color::Red),
+                            e,
+                            sp(Special::Reset)
+                        ))
+                        .unwrap();
                         exit(1);
                     }
                 };
@@ -162,7 +190,12 @@ pub fn question_vocab(
                 if captured == value {
                     adds_done.push(adds[idx].clone());
                     add_progress += 1;
-                    term.println(format!("{}correct!{}", fg(Color::Green), sp(Special::Reset))).unwrap();
+                    term.println(format!(
+                        "{}correct!{}",
+                        fg(Color::Green),
+                        sp(Special::Reset)
+                    ))
+                    .unwrap();
                 } else {
                     term.println(format!(
                         "{}Wrong! {}{}'{}'{}{} would have been right.{}",
@@ -173,7 +206,8 @@ pub fn question_vocab(
                         sp(Special::Reset),
                         fg(Color::Red),
                         sp(Special::Reset)
-                    )).unwrap();
+                    ))
+                    .unwrap();
                     adds_done.push(adds[idx].clone());
                 }
                 idx += 1;
