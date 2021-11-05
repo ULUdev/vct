@@ -1,5 +1,5 @@
+use btui::pbar::ExtProgressBar;
 use btui::Terminal;
-use btui::{effects::*, pbar::ExtProgressBar, print::*};
 use std::fs::{create_dir_all, File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
@@ -8,6 +8,7 @@ use std::process::exit;
 mod args;
 mod cfg;
 mod dict;
+mod info;
 mod pretty_print;
 mod question;
 
@@ -28,24 +29,22 @@ fn main() {
         match create_dir_all(params.config_dir.as_str()) {
             Ok(_) => (),
             Err(_) => {
-                term.eprintln(format!(
-                    "{}vct: couldn't create config dir{}",
-                    fg(Color::Red),
-                    sp(Special::Reset)
-                ))
-                .unwrap();
+                info::print_info(
+                    &term,
+                    "couldn't create config dir",
+                    info::MessageType::Error,
+                );
                 exit(1);
             }
         }
         match File::create(params.config_path.as_str()) {
             Ok(_) => (),
             Err(_) => {
-                term.eprintln(format!(
-                    "{}vct: failed creating config file{}",
-                    fg(Color::Red),
-                    sp(Special::Reset)
-                ))
-                .unwrap();
+                info::print_info(
+                    &term,
+                    "failed creating config file",
+                    info::MessageType::Error,
+                );
                 exit(1);
             }
         }
@@ -54,12 +53,7 @@ fn main() {
         match create_dir_all(format!("{}/dicts", params.config_dir).as_str()) {
             Ok(_) => (),
             Err(_) => {
-                term.eprintln(format!(
-                    "{}vct: couldn't create dicts dir{}",
-                    fg(Color::Red),
-                    sp(Special::Reset)
-                ))
-                .unwrap();
+                info::print_info(&term, "couldn't create dicts dir", info::MessageType::Error);
                 exit(1);
             }
         }
@@ -67,17 +61,16 @@ fn main() {
     let conf: Config = match load_config(params.config_path.as_str()) {
         Ok(c) => c,
         Err(e) => {
-            term.eprintln(format!(
-                "{red}vct: error loading config: {bold}{err}{reset}",
-                red = fg(Color::Red),
-                bold = sp(Special::Bold),
-                err = e,
-                reset = sp(Special::Reset)
-            ))
-            .unwrap();
+            info::print_info(
+                &term,
+                format!("error loading config: {}", e),
+                info::MessageType::Error,
+            );
             exit(1);
         }
     };
+
+    // TODO: move this to src/dict.rs and add database implementation
     if params.dict != String::new() {
         let mut parts = params.dict.as_str().split(';').map(|x| x.to_string());
         let dict_fname: String = parts.next().unwrap();
@@ -100,25 +93,22 @@ fn main() {
             if !n.exists() {
                 let mut parent_path: String = (*n).to_str().unwrap().to_string();
                 if parent_path.starts_with('/') {
-                    term.eprintln(format!(
-                        "{}vct: warning: path cannot start with a '/'. Ignoring...{}",
-                        fg(Color::Yellow),
-                        sp(Special::Reset)
-                    ))
-                    .unwrap();
+                    info::print_info(
+                        &term,
+                        "path cannot start with a '/'. Ignoring...",
+                        info::MessageType::Warning,
+                    );
                     parent_path = parent_path.as_str()[1..].to_string();
                 }
                 parent_path = format!("{}/{}", dict_dirname, parent_path);
                 match create_dir_all(parent_path.as_str()) {
                     Ok(_) => (),
                     Err(e) => {
-                        term.eprintln(format!(
-                            "{}vct: error: couldn't create required directories: {}{}",
-                            fg(Color::Red),
-                            e,
-                            sp(Special::Reset)
-                        ))
-                        .unwrap();
+                        info::print_info(
+                            &term,
+                            format!("couldn't create required directories: {}", e),
+                            info::MessageType::Error,
+                        );
                     }
                 }
             }
@@ -127,13 +117,11 @@ fn main() {
             let _ = match File::create(format!("{}/{}", dict_dirname, dict_fname).as_str()) {
                 Ok(_) => (),
                 Err(e) => {
-                    term.eprintln(format!(
-                        "{}vct: error creating file: {}{}",
-                        fg(Color::Red),
-                        e,
-                        sp(Special::Reset)
-                    ))
-                    .unwrap();
+                    info::print_info(
+                        &term,
+                        format!("error creating file: {}", e),
+                        info::MessageType::Error,
+                    );
                     exit(1);
                 }
             };
@@ -144,46 +132,47 @@ fn main() {
         {
             Ok(n) => n,
             Err(e) => {
-                term.eprintln(format!(
-                    "{}vct: error opening dictionary: {}{}",
-                    fg(Color::Red),
-                    e,
-                    sp(Special::Reset)
-                ))
-                .unwrap();
+                info::print_info(
+                    &term,
+                    format!("error opening dictionary: {}", e),
+                    info::MessageType::Error,
+                );
                 exit(1);
             }
         };
         match file.write_all(format!("{};{}\n", name, meanings).as_str().as_bytes()) {
             Ok(_) => (),
             Err(e) => {
-                term.eprintln(format!(
-                    "{}vct: error writing to file: {:?}{}",
-                    fg(Color::Red),
-                    e,
-                    sp(Special::Reset)
-                ))
-                .unwrap();
+                info::print_info(
+                    &term,
+                    format!("error writing to file: {}", e),
+                    info::MessageType::Error,
+                );
                 exit(1);
             }
         }
     }
 
     let usedb: bool = match params.usedb {
-        Some(n) => n,
+        Some(n) => {
+            info::print_info(
+                &term,
+                "using partially implemented feature (db). Ignoring...",
+                info::MessageType::Warning,
+            );
+            n
+        }
         None => conf.database.unwrap_or(false),
     };
     if let Some(n) = params.pretprin {
         let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, conf.clone(), usedb) {
             Ok(p) => p,
             Err(e) => {
-                term.eprintln(format!(
-                    "{}vct: error while parsing vocabulary dictionary: {}{}",
-                    fg(Color::Red),
-                    e,
-                    sp(Special::Reset)
-                ))
-                .unwrap();
+                info::print_info(
+                    &term,
+                    format!("error while parsing vocabulary dictionary: {}", e),
+                    info::MessageType::Error,
+                );
                 exit(1);
             }
         };
@@ -194,16 +183,19 @@ fn main() {
     if params.lang == String::new() {
         exit(0);
     }
-    let vocab = match load_vocab(params.config_dir.clone(), params.lang.clone(), conf.clone(), usedb) {
+    let vocab = match load_vocab(
+        params.config_dir.clone(),
+        params.lang.clone(),
+        conf.clone(),
+        usedb,
+    ) {
         Ok(n) => n,
         Err(e) => {
-            term.eprintln(format!(
-                "{}vct: error while parsing vocabulary dictionary: {}{}",
-                fg(Color::Red),
-                e,
-                sp(Special::Reset)
-            ))
-            .unwrap();
+            info::print_info(
+                &term,
+                format!("error while parsing vocabulary dictionary: {}", e),
+                info::MessageType::Error,
+            );
             exit(1);
         }
     };

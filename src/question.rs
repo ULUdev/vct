@@ -5,6 +5,8 @@ use rand::thread_rng;
 use std::io::{stdout, Write};
 use std::process::exit;
 
+use crate::info;
+
 pub fn question_vocab(
     lang: String,
     vocab: Vec<crate::dict::Vocab>,
@@ -56,28 +58,15 @@ pub fn question_vocab(
             let _ = match so.flush() {
                 Ok(_) => (),
                 Err(e) => {
-                    term.eprintln(format!(
-                        "{}vct: error when flushing stdout: {}{}",
-                        fg(Color::Red),
-                        e,
-                        sp(Special::Reset)
-                    ))
-                    .unwrap();
-                }
-            };
-            let input: String = match term.read_line_trimmed() {
-                Ok(n) => n,
-                Err(e) => {
-                    term.eprintln(format!(
-                        "{}vct: error: {}{}",
-                        fg(Color::Red),
-                        e,
-                        sp(Special::Reset)
-                    ))
-                    .unwrap();
+                    info::print_info(
+                        &term,
+                        format!("error when flushing stdout: {}", e),
+                        info::MessageType::Error,
+                    );
                     exit(1);
                 }
             };
+            let input: String = term.read_line_trimmed().unwrap();
             let captured: String = input.as_str().to_lowercase();
 
             // clear the screen if needed
@@ -153,28 +142,15 @@ pub fn question_vocab(
                 let _ = match so.flush() {
                     Ok(_) => (),
                     Err(e) => {
-                        term.eprintln(format!(
-                            "{}vct: error when flushing stdout: {}{}",
-                            fg(Color::Red),
-                            e,
-                            sp(Special::Reset)
-                        ))
-                        .unwrap();
-                    }
-                };
-                let input: String = match term.read_line_trimmed() {
-                    Ok(n) => n,
-                    Err(e) => {
-                        term.eprintln(format!(
-                            "{}vct: error: {}{}",
-                            fg(Color::Red),
-                            e,
-                            sp(Special::Reset)
-                        ))
-                        .unwrap();
+                        info::print_info(
+                            &term,
+                            format!("error when flushing stdout: {}", e),
+                            info::MessageType::Error,
+                        );
                         exit(1);
                     }
                 };
+                let input: String = term.read_line_trimmed().unwrap();
                 let captured: String = input.as_str().to_lowercase();
                 //
                 // clear the screen if needed

@@ -130,7 +130,7 @@ pub fn load_vocab(
             let name: Result<String, rusqlite::Error> = row.get(0);
             let meanings: Result<String, rusqlite::Error> = row.get(1);
             let additionals: Result<String, rusqlite::Error> = row.get(2);
-            if let Err(_) = additionals {
+            if additionals.is_err() {
                 out = match Vocab::from_string(format!("{};{}", name.unwrap(), meanings.unwrap())) {
                     Ok(n) => n,
                     Err(_) => Vocab::new(String::new(), Vec::new(), None),
@@ -190,3 +190,5 @@ pub fn load_vocab(
 
     Ok(out)
 }
+
+// TODO: add write functionality
