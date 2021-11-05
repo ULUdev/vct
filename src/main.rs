@@ -1,7 +1,7 @@
 use btui::pbar::ExtProgressBar;
 use btui::Terminal;
-use std::fs::{create_dir_all, File, OpenOptions};
-use std::io::Write;
+use std::fs::{create_dir_all, File};
+// use std::io::Write;
 use std::path::Path;
 use std::process::exit;
 
@@ -18,7 +18,7 @@ use dict::*;
 
 fn main() {
     let params: Params = load_params();
-    let mut dict_dirname: String = format!("{}/dicts", params.config_dir);
+    // let mut dict_dirname: String = format!("{}/dicts", params.config_dir);
     let term: Terminal = Terminal::new();
 
     if params.quit {
@@ -70,6 +70,20 @@ fn main() {
         }
     };
 
+    let usedb: bool = match params.usedb {
+        Some(n) => {
+            if n {
+                info::print_info(
+                    &term,
+                    "using partially implemented feature (db). Ignoring...",
+                    info::MessageType::Warning,
+                );
+            }
+            n
+        }
+        None => conf.database.unwrap_or(false),
+    };
+
     // TODO: move this to src/dict.rs and add database implementation
     if params.dict != String::new() {
         let mut parts = params.dict.as_str().split(';').map(|x| x.to_string());
@@ -79,90 +93,111 @@ fn main() {
         if let Some(n) = parts.next() {
             meanings.push_str(format!(";{}", n).as_str());
         }
-        if let Some(dicts) = &conf.dicts {
-            if !dicts.is_empty() {
-                if dicts[0].clone().starts_with('/') {
-                    dict_dirname = dicts[0].clone();
-                } else {
-                    dict_dirname = format!("{}/{}", params.config_dir, dicts[0].clone());
-                }
-            }
-        }
-        if let Some(n) = Path::new(&dict_fname).parent() {
-            if !n.exists() {
-                let mut parent_path: String = (*n).to_str().unwrap().to_string();
-                if parent_path.starts_with('/') {
-                    info::print_info(
-                        &term,
-                        "path cannot start with a '/'. Ignoring...",
-                        info::MessageType::Warning,
-                    );
-                    parent_path = parent_path.as_str()[1..].to_string();
-                }
-                parent_path = format!("{}/{}", dict_dirname, parent_path);
-                match create_dir_all(parent_path.as_str()) {
-                    Ok(_) => (),
-                    Err(e) => {
-                        info::print_info(
-                            &term,
-                            format!("couldn't create required directories: {}", e),
-                            info::MessageType::Error,
-                        );
-                    }
-                }
-            }
-        }
-        if !Path::new(format!("{}/{}", dict_dirname, dict_fname).as_str()).exists() {
-            let _ = match File::create(format!("{}/{}", dict_dirname, dict_fname).as_str()) {
-                Ok(_) => (),
-                Err(e) => {
-                    info::print_info(
-                        &term,
-                        format!("error creating file: {}", e),
-                        info::MessageType::Error,
-                    );
-                    exit(1);
-                }
-            };
-        }
-        let mut file = match OpenOptions::new()
-            .append(true)
-            .open(format!("{}/{}", dict_dirname, dict_fname).as_str())
-        {
+        let vocab: Vocab = match Vocab::from_string(format!("{};{}", name, meanings)) {
             Ok(n) => n,
             Err(e) => {
                 info::print_info(
                     &term,
-                    format!("error opening dictionary: {}", e),
+                    format!("error parsing vocabulary: {}", e),
                     info::MessageType::Error,
                 );
                 exit(1);
             }
         };
-        match file.write_all(format!("{};{}\n", name, meanings).as_str().as_bytes()) {
-            Ok(_) => (),
+        let mut file = match params.usedb {
+            Some(true) => conf.dbpath.unwrap_or("vocab.db".to_string()),
+            Some(false) | None => match conf.database {
+                Some(true) => conf.dbpath.unwrap_or("vocab.db".to_string()),
+                Some(false) | None => conf.dicts.unwrap_or(vec!["dicts".to_string()])[0].clone(),
+            },
+        };
+        if !file.starts_with('/') {
+            file = format!("{}/{}", params.config_dir, file);
+        }
+        match write_vocab(file.as_str(), dict_fname.as_str(), vocab, &term, usedb) {
+            Ok(_) => exit(0),
             Err(e) => {
                 info::print_info(
                     &term,
-                    format!("error writing to file: {}", e),
+                    format!("problems writing vocab: {}", e),
                     info::MessageType::Error,
                 );
                 exit(1);
             }
         }
+        // if let Some(dicts) = &conf.dicts {
+        //     if !dicts.is_empty() {
+        //         if dicts[0].clone().starts_with('/') {
+        //             dict_dirname = dicts[0].clone();
+        //         } else {
+        //             dict_dirname = format!("{}/{}", params.config_dir, dicts[0].clone());
+        //         }
+        //     }
+        // }
+        // if let Some(n) = Path::new(&dict_fname).parent() {
+        //     if !n.exists() {
+        //         let mut parent_path: String = (*n).to_str().unwrap().to_string();
+        //         if parent_path.starts_with('/') {
+        //             info::print_info(
+        //                 &term,
+        //                 "path cannot start with a '/'. Ignoring...",
+        //                 info::MessageType::Warning,
+        //             );
+        //             parent_path = parent_path.as_str()[1..].to_string();
+        //         }
+        //         parent_path = format!("{}/{}", dict_dirname, parent_path);
+        //         match create_dir_all(parent_path.as_str()) {
+        //             Ok(_) => (),
+        //             Err(e) => {
+        //                 info::print_info(
+        //                     &term,
+        //                     format!("couldn't create required directories: {}", e),
+        //                     info::MessageType::Error,
+        //                 );
+        //             }
+        //         }
+        //     }
+        // }
+        // if !Path::new(format!("{}/{}", dict_dirname, dict_fname).as_str()).exists() {
+        //     let _ = match File::create(format!("{}/{}", dict_dirname, dict_fname).as_str()) {
+        //         Ok(_) => (),
+        //         Err(e) => {
+        //             info::print_info(
+        //                 &term,
+        //                 format!("error creating file: {}", e),
+        //                 info::MessageType::Error,
+        //             );
+        //             exit(1);
+        //         }
+        //     };
+        // }
+        // let mut file = match OpenOptions::new()
+        //     .append(true)
+        //     .open(format!("{}/{}", dict_dirname, dict_fname).as_str())
+        // {
+        //     Ok(n) => n,
+        //     Err(e) => {
+        //         info::print_info(
+        //             &term,
+        //             format!("error opening dictionary: {}", e),
+        //             info::MessageType::Error,
+        //         );
+        //         exit(1);
+        //     }
+        // };
+        // match file.write_all(format!("{};{}\n", name, meanings).as_str().as_bytes()) {
+        //     Ok(_) => (),
+        //     Err(e) => {
+        //         info::print_info(
+        //             &term,
+        //             format!("error writing to file: {}", e),
+        //             info::MessageType::Error,
+        //         );
+        //         exit(1);
+        //     }
+        // }
     }
 
-    let usedb: bool = match params.usedb {
-        Some(n) => {
-            info::print_info(
-                &term,
-                "using partially implemented feature (db). Ignoring...",
-                info::MessageType::Warning,
-            );
-            n
-        }
-        None => conf.database.unwrap_or(false),
-    };
     if let Some(n) = params.pretprin {
         let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, &conf, usedb) {
             Ok(p) => p,

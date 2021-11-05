@@ -1,8 +1,10 @@
 use crate::cfg::*;
-use rusqlite::{Connection, Result};
-use std::fs::read_to_string;
-use std::io::{Error, ErrorKind};
+use crate::info;
+use rusqlite::{params, Connection, Result};
+use std::fs::{create_dir_all, read_to_string, OpenOptions};
+use std::io::{Error, ErrorKind, Write};
 use std::path::Path;
+use std::process::exit;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vocab {
@@ -28,7 +30,7 @@ impl Vocab {
 
     /// parse a String to a vocab
     /// # Arguments
-    /// *`string`: the string to parse
+    /// `string`: the string to parse
     /// # Returns
     /// a new vocabulary wrapped in a `Result`
     pub fn from_string(string: String) -> Result<Vocab, Error> {
@@ -115,7 +117,7 @@ pub fn load_vocab(
 
         let mut sel = match db.prepare(
             format!(
-                "SELECT name, meanings, additionals FROM vocab WHERE (lang == {})",
+                "SELECT name, meanings, additionals FROM vocab WHERE (lang == '{}')",
                 lang
             )
             .as_str(),
@@ -129,19 +131,19 @@ pub fn load_vocab(
             let out: Vocab;
             let name: Result<String, rusqlite::Error> = row.get(0);
             let meanings: Result<String, rusqlite::Error> = row.get(1);
-            let additionals: Result<String, rusqlite::Error> = row.get(2);
-            if additionals.is_err() {
-                out = match Vocab::from_string(format!("{};{}", name.unwrap(), meanings.unwrap())) {
-                    Ok(n) => n,
-                    Err(_) => Vocab::new(String::new(), Vec::new(), None),
-                };
-            } else {
+            let additionals: Result<Option<String>, rusqlite::Error> = row.get(2);
+            if let Some(adds) = additionals.unwrap() {
                 out = match Vocab::from_string(format!(
                     "{};{};{}",
                     name.unwrap(),
                     meanings.unwrap(),
-                    additionals.unwrap()
+                    adds
                 )) {
+                    Ok(n) => n,
+                    Err(_) => Vocab::new(String::new(), Vec::new(), None),
+                };
+            } else {
+                out = match Vocab::from_string(format!("{};{}", name.unwrap(), meanings.unwrap())) {
                     Ok(n) => n,
                     Err(_) => Vocab::new(String::new(), Vec::new(), None),
                 };
@@ -192,3 +194,138 @@ pub fn load_vocab(
 }
 
 // TODO: add write functionality
+
+pub fn write_vocab(
+    file: &str,
+    lang: &str,
+    vocab: Vocab,
+    term: &btui::Terminal,
+    db: bool,
+) -> Result<()> {
+    if db {
+        let conn = match Connection::open(file) {
+            Ok(n) => n,
+            Err(e) => {
+                info::print_info(
+                    term,
+                    format!("error opening connection to database: {}", e),
+                    info::MessageType::Error,
+                );
+                exit(1);
+            }
+        };
+
+        match conn.execute("CREATE TABLE IF NOT EXISTS vocab (lang VARCHAR(256) NOT NULL, name VARCHAR(256) NOT NULL, meanings VARCHAR(256) NOT NULL, additionals VARCHAR(256))", []) {
+            Ok(_) => (),
+            Err(e) => {
+                info::print_info(term, format!("error preparing database: {}", e), info::MessageType::Error);
+                exit(1);
+            }
+        }
+
+        if let Some(n) = vocab.additionals {
+            let mut adds: String = n.iter().map(|x| format!("{},", x)).collect();
+            adds = adds[..adds.len() - 1].to_string();
+            let mut meanings: String = vocab.meanings.iter().map(|x| format!("{},", x)).collect();
+            meanings = meanings[..meanings.len() - 1].to_string();
+            match conn.execute(
+                "INSERT INTO vocab (lang, name, meanings, additionals) VALUES (?, ?, ?, ?)",
+                params![lang, vocab.name, meanings, adds],
+            ) {
+                Ok(_) => (),
+                Err(e) => {
+                    info::print_info(
+                        term,
+                        format!("error inserting into database: {}", e),
+                        info::MessageType::Error,
+                    );
+                    exit(1);
+                }
+            }
+        } else {
+            let mut meanings: String = vocab.meanings.iter().map(|x| format!("{},", x)).collect();
+            meanings = meanings[..meanings.len() - 1].to_string();
+            match conn.execute(
+                "INSERT INTO vocab (lang, name, meanings, additionals) VALUES (?, ?, ?, NULL)",
+                params![lang, vocab.name, meanings],
+            ) {
+                Ok(_) => (),
+                Err(e) => {
+                    info::print_info(
+                        term,
+                        format!("error inserting into database: {}", e),
+                        info::MessageType::Error,
+                    );
+                    exit(1);
+                }
+            }
+        }
+
+        return Ok(());
+    }
+    if !Path::new(file).exists() {
+        if file.contains('/') {
+            let p = Path::new(file);
+            let parent = p.parent().unwrap();
+            if !parent.exists() {
+                match create_dir_all(parent.to_str().unwrap()) {
+                    Ok(_) => (),
+                    Err(e) => {
+                        info::print_info(
+                            term,
+                            format!("failed creating necessary directories: {}", e),
+                            info::MessageType::Error,
+                        );
+                        exit(1);
+                    }
+                }
+            }
+        }
+        let mut fhandle = match OpenOptions::new().append(true).open(file) {
+            Ok(n) => n,
+            Err(e) => {
+                info::print_info(
+                    term,
+                    format!("error opening dictionary file: {}", e),
+                    info::MessageType::Error,
+                );
+                exit(1);
+            }
+        };
+        let mut meanings: String = vocab.meanings.iter().map(|x| format!("{},", x)).collect();
+        meanings = meanings[..meanings.len() - 1].to_string();
+        if let Some(adds) = vocab.additionals {
+            let mut additionals: String = adds.iter().map(|x| format!("{},", x)).collect();
+            additionals = additionals[..additionals.len() - 1].to_string();
+            match fhandle.write_all(
+                format!("{};{};{}", vocab.name, meanings, additionals)
+                    .as_str()
+                    .as_bytes(),
+            ) {
+                Ok(_) => (),
+                Err(e) => {
+                    info::print_info(
+                        term,
+                        format!("error writing to file: {}", e),
+                        info::MessageType::Error,
+                    );
+                    exit(1);
+                }
+            }
+        } else {
+            match fhandle.write_all(format!("{};{}", vocab.name, meanings).as_str().as_bytes()) {
+                Ok(_) => (),
+                Err(e) => {
+                    info::print_info(
+                        term,
+                        format!("error writing to file: {}", e),
+                        info::MessageType::Error,
+                    );
+                    exit(1);
+                }
+            }
+        }
+    }
+
+    Ok(())
+}

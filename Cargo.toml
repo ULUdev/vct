@@ -1,6 +1,6 @@
 [package]
 name = "vct"
-version = "1.4.14-nightly"
+version = "1.4.15-nightly"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
