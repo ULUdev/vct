@@ -14,6 +14,7 @@ pub struct Config {
 }
 
 /// load the configuration file
+// TODO: use VctError
 pub fn load_config(path: &str) -> Result<Config, Error> {
     let contents: String = match read_to_string(path) {
         Ok(n) => n,

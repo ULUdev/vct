@@ -8,6 +8,7 @@ use std::process::exit;
 mod args;
 mod cfg;
 mod dict;
+mod error;
 mod info;
 mod pretty_print;
 mod question;
@@ -75,7 +76,7 @@ fn main() {
             if n {
                 info::print_info(
                     &term,
-                    "using partially implemented feature (db). Ignoring...",
+                    "using major unstable feature (db). Ignoring...",
                     info::MessageType::Warning,
                 );
             }
@@ -105,10 +106,12 @@ fn main() {
             }
         };
         let mut file = match params.usedb {
-            Some(true) => conf.dbpath.unwrap_or("vocab.db".to_string()),
+            Some(true) => conf.dbpath.unwrap_or_else(|| "vocab.db".to_string()),
             Some(false) | None => match conf.database {
-                Some(true) => conf.dbpath.unwrap_or("vocab.db".to_string()),
-                Some(false) | None => conf.dicts.unwrap_or(vec!["dicts".to_string()])[0].clone(),
+                Some(true) => conf.dbpath.unwrap_or_else(|| "vocab.db".to_string()),
+                Some(false) | None => {
+                    conf.dicts.unwrap_or_else(|| vec!["dicts".to_string()])[0].clone()
+                }
             },
         };
         if !file.starts_with('/') {
@@ -125,77 +128,6 @@ fn main() {
                 exit(1);
             }
         }
-        // if let Some(dicts) = &conf.dicts {
-        //     if !dicts.is_empty() {
-        //         if dicts[0].clone().starts_with('/') {
-        //             dict_dirname = dicts[0].clone();
-        //         } else {
-        //             dict_dirname = format!("{}/{}", params.config_dir, dicts[0].clone());
-        //         }
-        //     }
-        // }
-        // if let Some(n) = Path::new(&dict_fname).parent() {
-        //     if !n.exists() {
-        //         let mut parent_path: String = (*n).to_str().unwrap().to_string();
-        //         if parent_path.starts_with('/') {
-        //             info::print_info(
-        //                 &term,
-        //                 "path cannot start with a '/'. Ignoring...",
-        //                 info::MessageType::Warning,
-        //             );
-        //             parent_path = parent_path.as_str()[1..].to_string();
-        //         }
-        //         parent_path = format!("{}/{}", dict_dirname, parent_path);
-        //         match create_dir_all(parent_path.as_str()) {
-        //             Ok(_) => (),
-        //             Err(e) => {
-        //                 info::print_info(
-        //                     &term,
-        //                     format!("couldn't create required directories: {}", e),
-        //                     info::MessageType::Error,
-        //                 );
-        //             }
-        //         }
-        //     }
-        // }
-        // if !Path::new(format!("{}/{}", dict_dirname, dict_fname).as_str()).exists() {
-        //     let _ = match File::create(format!("{}/{}", dict_dirname, dict_fname).as_str()) {
-        //         Ok(_) => (),
-        //         Err(e) => {
-        //             info::print_info(
-        //                 &term,
-        //                 format!("error creating file: {}", e),
-        //                 info::MessageType::Error,
-        //             );
-        //             exit(1);
-        //         }
-        //     };
-        // }
-        // let mut file = match OpenOptions::new()
-        //     .append(true)
-        //     .open(format!("{}/{}", dict_dirname, dict_fname).as_str())
-        // {
-        //     Ok(n) => n,
-        //     Err(e) => {
-        //         info::print_info(
-        //             &term,
-        //             format!("error opening dictionary: {}", e),
-        //             info::MessageType::Error,
-        //         );
-        //         exit(1);
-        //     }
-        // };
-        // match file.write_all(format!("{};{}\n", name, meanings).as_str().as_bytes()) {
-        //     Ok(_) => (),
-        //     Err(e) => {
-        //         info::print_info(
-        //             &term,
-        //             format!("error writing to file: {}", e),
-        //             info::MessageType::Error,
-        //         );
-        //         exit(1);
-        //     }
-        // }
     }
 
     if let Some(n) = params.pretprin {

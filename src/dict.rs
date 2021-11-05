@@ -1,8 +1,9 @@
 use crate::cfg::*;
+use crate::error::*;
 use crate::info;
 use rusqlite::{params, Connection, Result};
 use std::fs::{create_dir_all, read_to_string, OpenOptions};
-use std::io::{Error, ErrorKind, Write};
+use std::io::Write;
 use std::path::Path;
 use std::process::exit;
 
@@ -33,12 +34,13 @@ impl Vocab {
     /// `string`: the string to parse
     /// # Returns
     /// a new vocabulary wrapped in a `Result`
-    pub fn from_string(string: String) -> Result<Vocab, Error> {
+    // TODO: use custom vct error
+    pub fn from_string(string: String) -> Result<Vocab, VctError> {
         let parts: Vec<&str> = string.as_str().split(';').collect();
         if parts.len() < 2 {
-            return Err(Error::new(
-                ErrorKind::InvalidInput,
-                "string has invalid format",
+            return Err(VctError::new(
+                VctErrorKind::ParsingError,
+                "omitting necessary parts of vocabulary",
             ));
         }
         let name: String = parts[0].to_string();
@@ -88,12 +90,13 @@ impl Vocab {
     }
 }
 
+// TODO: use VctError
 pub fn load_vocab(
     config_dir: String,
     lang: String,
     conf: &Config,
     usedb: bool,
-) -> Result<Vec<Vocab>, Error> {
+) -> Result<Vec<Vocab>, VctError> {
     if usedb {
         let mut path: String = match &conf.dbpath {
             Some(n) => n.to_string(),
@@ -105,13 +108,16 @@ pub fn load_vocab(
         let db = match Connection::open(path.as_str()) {
             Ok(n) => n,
             Err(_) => {
-                return Err(Error::new(ErrorKind::Other, "error connecting to database"));
+                return Err(VctError::new(
+                    VctErrorKind::DatabaseError,
+                    "error connecting to database",
+                ));
             }
         };
         match db.execute("CREATE TABLE IF NOT EXISTS vocab (lang VARCHAR(256) NOT NULL, name VARCHAR(256) NOT NULL, meanings VARCHAR(256) NOT NULL, additionals VARCHAR(256))", []) {
             Ok(_) => (),
             Err(_) => {
-                return Err(Error::new(ErrorKind::Other, "error while creating database"));
+                return Err(VctError::new(VctErrorKind::DatabaseError, "error while creating database"));
             }
         }
 
@@ -124,7 +130,7 @@ pub fn load_vocab(
         ) {
             Ok(n) => n,
             Err(_) => {
-                return Err(Error::new(ErrorKind::Other, "problem with the language provided and the database. Maybe your vocab is in a dict file? Try `--nodb` to disable the database"));
+                return Err(VctError::new(VctErrorKind::DatabaseError, "problem with the language provided and the database. Maybe your vocab is in a dict file? Try `--nodb` to disable the database"));
             }
         };
         let vocab_iter = sel.query_map([], |row| {
@@ -174,8 +180,11 @@ pub fn load_vocab(
     let conf_contents: String = match read_to_string(format!("{}/{}", dict_dirname, lang).as_str())
     {
         Ok(n) => n,
-        Err(e) => {
-            return Err(e);
+        Err(_) => {
+            return Err(VctError::new(
+                VctErrorKind::FileError,
+                "problem opening dictionary file",
+            ));
         }
     };
     let mut out: Vec<Vocab> = Vec::new();

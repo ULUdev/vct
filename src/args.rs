@@ -159,5 +159,7 @@ Options:
   -p,--pretty <lang>: pretty print the vocabulary of <lang> and quit
   --clear: enable clearing lines (less unused screen space)
   --noclear: disable clearing lines (more unused screen space)
+  --db: enable database
+  --nodb: disable database
 ";
-const VERSION_STR: &str = "vct: v1.4.15-nightly";
+const VERSION_STR: &str = "vct: v1.4.16-nightly";
