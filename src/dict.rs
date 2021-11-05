@@ -89,12 +89,12 @@ impl Vocab {
 pub fn load_vocab(
     config_dir: String,
     lang: String,
-    conf: Config,
+    conf: &Config,
     usedb: bool,
 ) -> Result<Vec<Vocab>, Error> {
     if usedb {
-        let mut path: String = match conf.dbpath {
-            Some(n) => n,
+        let mut path: String = match &conf.dbpath {
+            Some(n) => n.to_string(),
             None => String::from("db.sqlite"),
         };
         if !path.starts_with('/') {
@@ -154,7 +154,7 @@ pub fn load_vocab(
 
     let mut dict_dirname: String = format!("{}/dicts", config_dir);
     if conf.dicts != None {
-        let dicts = conf.dicts.unwrap();
+        let dicts = conf.dicts.as_ref().unwrap();
         for elm in dicts.clone() {
             if elm.starts_with('/') {
                 if Path::new(format!("{}/{}", elm, lang.clone()).as_str()).exists() {

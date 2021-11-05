@@ -79,8 +79,7 @@ fn main() {
         if let Some(n) = parts.next() {
             meanings.push_str(format!(";{}", n).as_str());
         }
-        if conf.dicts != None {
-            let dicts = conf.clone().dicts.unwrap();
+        if let Some(dicts) = &conf.dicts {
             if !dicts.is_empty() {
                 if dicts[0].clone().starts_with('/') {
                     dict_dirname = dicts[0].clone();
@@ -165,7 +164,7 @@ fn main() {
         None => conf.database.unwrap_or(false),
     };
     if let Some(n) = params.pretprin {
-        let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, conf.clone(), usedb) {
+        let voc: Vec<Vocab> = match load_vocab(params.config_dir.clone(), n, &conf, usedb) {
             Ok(p) => p,
             Err(e) => {
                 info::print_info(
@@ -183,12 +182,7 @@ fn main() {
     if params.lang == String::new() {
         exit(0);
     }
-    let vocab = match load_vocab(
-        params.config_dir.clone(),
-        params.lang.clone(),
-        conf.clone(),
-        usedb,
-    ) {
+    let vocab = match load_vocab(params.config_dir.clone(), params.lang.clone(), &conf, usedb) {
         Ok(n) => n,
         Err(e) => {
             info::print_info(
