@@ -157,49 +157,47 @@ pub fn load_vocab(
             Ok(out)
         });
         let vocab: Vec<Vocab> = vocab_iter.unwrap().map(|x| x.unwrap()).collect();
-        return Ok(vocab);
-    }
-
-    let mut dict_dirname: String = format!("{}/dicts", config_dir);
-    if conf.dicts != None {
-        let dicts = conf.dicts.as_ref().unwrap();
-        for elm in dicts.clone() {
-            if elm.starts_with('/') {
-                if Path::new(format!("{}/{}", elm, lang.clone()).as_str()).exists() {
-                    dict_dirname = elm;
-                    break;
+        Ok(vocab)
+    } else {
+        let mut dict_dirname: String = format!("{}/dicts", config_dir);
+        if conf.dict != None {
+            let dict = conf.dict.as_ref().unwrap();
+            if dict.is_empty() {
+                info::print_info(
+                    &btui::Terminal::new(),
+                    "dict in config is empty. Ignoring...",
+                    info::MessageType::Warning,
+                );
+            } else if dict.starts_with('/') {
+                dict_dirname = dict.clone();
+            } else {
+                dict_dirname = format!("{}/{}", config_dir, dict.clone());
+            }
+        }
+        let conf_contents: String =
+            match read_to_string(format!("{}/{}", dict_dirname, lang).as_str()) {
+                Ok(n) => n,
+                Err(_) => {
+                    return Err(VctError::new(
+                        VctErrorKind::FileError,
+                        "problem opening dictionary file",
+                    ));
                 }
-            } else if Path::new(format!("{}/{}/{}", config_dir.clone(), elm, lang.clone()).as_str())
-                .exists()
-            {
-                dict_dirname = format!("{}/{}", config_dir, elm);
-                break;
-            }
+            };
+        let mut out: Vec<Vocab> = Vec::new();
+        for line in conf_contents.as_str().lines() {
+            let new_line: String = line.chars().filter(|x| x != &'\n').collect();
+            let voc: Vocab = match Vocab::from_string(new_line) {
+                Ok(n) => n,
+                Err(e) => {
+                    return Err(e);
+                }
+            };
+            out.push(voc);
         }
-    }
-    let conf_contents: String = match read_to_string(format!("{}/{}", dict_dirname, lang).as_str())
-    {
-        Ok(n) => n,
-        Err(_) => {
-            return Err(VctError::new(
-                VctErrorKind::FileError,
-                "problem opening dictionary file",
-            ));
-        }
-    };
-    let mut out: Vec<Vocab> = Vec::new();
-    for line in conf_contents.as_str().lines() {
-        let new_line: String = line.chars().filter(|x| x != &'\n').collect();
-        let voc: Vocab = match Vocab::from_string(new_line) {
-            Ok(n) => n,
-            Err(e) => {
-                return Err(e);
-            }
-        };
-        out.push(voc);
-    }
 
-    Ok(out)
+        Ok(out)
+    }
 }
 
 // TODO: add write functionality

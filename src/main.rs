@@ -109,9 +109,7 @@ fn main() {
             Some(true) => conf.dbpath.unwrap_or_else(|| "vocab.db".to_string()),
             Some(false) | None => match conf.database {
                 Some(true) => conf.dbpath.unwrap_or_else(|| "vocab.db".to_string()),
-                Some(false) | None => {
-                    conf.dicts.unwrap_or_else(|| vec!["dicts".to_string()])[0].clone()
-                }
+                Some(false) | None => conf.dict.unwrap_or_else(|| String::from("dicts")),
             },
         };
         if !file.starts_with('/') {

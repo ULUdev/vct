@@ -162,4 +162,4 @@ Options:
   --db: enable database
   --nodb: disable database
 ";
-const VERSION_STR: &str = "vct: v1.4.16-nightly";
+const VERSION_STR: &str = "vct: v1.4.17-nightly";

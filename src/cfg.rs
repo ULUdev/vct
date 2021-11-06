@@ -5,7 +5,7 @@ use std::io::Error;
 #[derive(Deserialize, Clone)]
 /// struct representing a config file for vct
 pub struct Config {
-    pub dicts: Option<Vec<String>>,
+    pub dict: Option<String>,
     pub vocab: Option<String>,
     pub additionals: Option<bool>,
     pub clearlines: Option<bool>,

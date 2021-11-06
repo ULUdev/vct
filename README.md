@@ -41,7 +41,7 @@ if the language doesn't already exist it will be created.
 The configuration file is in `$XDG_CONFIG_HOME/vct/config.toml` (if `$XDG_CONFIG_HOME` doesn't exist it will be in `~/.config/vct/config.toml`)
 and currently has only two fields:
 ```toml
-dicts = ["dicts", "/path/to/systemwide_dicts"]
+dict = "dicts"
 vocab = "one"
 additionals = true
 clearlines = true
