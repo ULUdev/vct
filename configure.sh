@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 deps() {
 	echo "checking dependencies..."
@@ -9,7 +9,7 @@ deps() {
 	fi
 	which git > /dev/null
 	if [ ! "$?" = 0 ]; then
-		echo "[ERROR] \`git\` couldn't be fount in \$PATH"
+		echo "[ERROR] \`git\` couldn't be found in \$PATH"
 		exit 1
 	fi
 }
@@ -70,7 +70,7 @@ install: release
 
 clean:
 	cargo clean'
-	echo "generating makefile..."
+	echo "generating Makefile..."
 	echo "$PREFIX
 $MAKEFILE" > Makefile
 	echo "done!"

@@ -22,6 +22,7 @@ pub fn load_config(path: &str) -> Result<Config, Error> {
             return Err(e);
         }
     };
+    // TODO: remove unwrap in favor of error handling
     let cfg: Config = toml::from_str(contents.as_str()).unwrap();
     Ok(cfg)
 }

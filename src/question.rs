@@ -129,8 +129,36 @@ pub fn question_vocab(
             let mut adds_done: Vec<String> = Vec::new();
             let mut idx: usize = 0;
             while adds_done.len() < adds.len() {
-                let key = adds[idx].split(':').next().unwrap();
-                let value = adds[idx].split(':').nth(1).unwrap();
+                let key = match adds[idx].split(':').next() {
+                    Some(n) => n,
+                    None => {
+                        info::print_info(
+                            &term,
+                            format!(
+                                "failed to parse additional from vocab '{}': {}",
+                                cur_vocab.get_name(),
+                                adds[idx]
+                            ),
+                            info::MessageType::Error,
+                        );
+                        exit(1);
+                    }
+                };
+                let value = match adds[idx].split(':').nth(1) {
+                    Some(n) => n,
+                    None => {
+                        info::print_info(
+                            &term,
+                            format!(
+                                "failed to parse additional from vocab '{}': {}",
+                                cur_vocab.get_name(),
+                                adds[idx]
+                            ),
+                            info::MessageType::Error,
+                        );
+                        exit(1);
+                    }
+                };
                 term.print(format!(
                     "{}(additional) what is '{}' of '{}'? > {}",
                     fg(Color::White),

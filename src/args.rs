@@ -1,3 +1,5 @@
+use crate::info;
+use btui::Terminal;
 use std::env::args;
 use std::env::var;
 
@@ -12,6 +14,7 @@ pub struct Params {
     pub pretprin: Option<String>,
     pub clearlines: Option<bool>,
     pub usedb: Option<bool>,
+    pub query: Option<String>,
 }
 
 impl Params {
@@ -31,6 +34,7 @@ impl Params {
             pretprin: None,
             clearlines: None,
             usedb: None,
+            query: None,
         }
     }
 }
@@ -42,6 +46,7 @@ pub fn load_params() -> Params {
         eprintln!("{}", HELP_STR);
         params.quit = true;
     }
+    let term = Terminal::new();
     for (idx, arg) in arguments.clone().into_iter().enumerate() {
         match arg.as_str() {
             "-h" | "--help" => {
@@ -56,21 +61,21 @@ pub fn load_params() -> Params {
                 if (arguments.len() - 1) > idx {
                     params.config_path = arguments[idx + 1usize].clone();
                 } else {
-                    eprintln!("vct: no config path provided");
+                    info::print_info(&term, "no config path provided", info::MessageType::Warning);
                 }
             }
             "-l" | "--lang" => {
                 if (arguments.len() - 1) > idx {
                     params.lang = arguments[idx + 1usize].clone();
                 } else {
-                    eprintln!("vct: no lang provided")
+                    info::print_info(&term, "no lang provided", info::MessageType::Warning);
                 }
             }
             "--config-dir" => {
                 if (arguments.len() - 1) > idx {
                     params.config_dir = arguments[idx + 1usize].clone();
                 } else {
-                    eprintln!("vct: no config dir provided");
+                    info::print_info(&term, "no config dir provided", info::MessageType::Warning);
                 }
             }
             "-d" | "--dict" => {
@@ -95,7 +100,11 @@ pub fn load_params() -> Params {
                         }
                     }
                 } else {
-                    eprintln!("vct: no parameters for dict operations provided");
+                    info::print_info(
+                        &term,
+                        "no parameters for dict operations provided",
+                        info::MessageType::Warning,
+                    );
                 }
             }
             "-V" | "--vocab" => {
@@ -104,7 +113,7 @@ pub fn load_params() -> Params {
                         "all" => String::from("all"),
                         "one" => String::from("one"),
                         n => {
-                            eprintln!("vct: warning: '{}' is not valid as a vocab parameter. Valid are 'one' and 'all'. Using default", n);
+                            info::print_info(&term, format!("'{}' is not valid as a vocab parameter. Valid are 'one' and 'all'. Using default", n), info::MessageType::Warning);
                             String::new()
                         }
                     }
@@ -120,7 +129,7 @@ pub fn load_params() -> Params {
                 if (arguments.len() - 1) > idx {
                     params.pretprin = Some(arguments[idx + 1usize].clone());
                 } else {
-                    eprintln!("vct: warning: no lang provided");
+                    info::print_info(&term, "no lang provided", info::MessageType::Warning);
                 }
             }
             "--clear" => {
@@ -134,6 +143,13 @@ pub fn load_params() -> Params {
             }
             "--nodb" => {
                 params.usedb = Some(false);
+            }
+            "-q" | "--query" => {
+                if (arguments.len() - 1) > idx {
+                    params.query = Some(arguments[idx + 1usize].clone());
+                } else {
+                    info::print_info(&term, "no query provided", info::MessageType::Warning);
+                }
             }
             _ => (),
         }
@@ -161,5 +177,6 @@ Options:
   --noclear: disable clearing lines (more unused screen space)
   --db: enable database
   --nodb: disable database
+  -q,--query <query>: query vocabulary for <query>
 ";
-const VERSION_STR: &str = "vct: v1.4.17-nightly";
+const VERSION_STR: &str = "vct: v1.4.20-nightly";

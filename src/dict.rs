@@ -44,11 +44,17 @@ impl Vocab {
             ));
         }
         let name: String = parts[0].to_string();
+        if name.is_empty() {
+            return Err(VctError::new(VctErrorKind::ParsingError, "empty name"));
+        }
         let meanings_str: Vec<&str> = parts[1].split(',').collect();
         let meanings: Vec<String> = meanings_str
             .iter()
             .map(|meaning| meaning.to_lowercase())
             .collect();
+        if meanings.is_empty() {
+            return Err(VctError::new(VctErrorKind::ParsingError, "empty meanings"));
+        }
         if parts.len() > 2 {
             let additionals_str: Vec<&str> = parts[2].split(',').collect();
             let additionals: Vec<String> = additionals_str
@@ -146,7 +152,9 @@ pub fn load_vocab(
                     adds
                 )) {
                     Ok(n) => n,
-                    Err(_) => Vocab::new(String::new(), Vec::new(), None),
+                    Err(_) => {
+                        return Err(rusqlite::Error::ExecuteReturnedResults);
+                    }
                 };
             } else {
                 out = match Vocab::from_string(format!("{};{}", name.unwrap(), meanings.unwrap())) {
@@ -336,3 +344,4 @@ pub fn write_vocab(
 
     Ok(())
 }
+// TODO: add a function to load all vocabulary from dictionaries
