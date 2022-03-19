@@ -6,7 +6,6 @@ use btui::Terminal;
 pub enum MessageType {
     Warning,
     Error,
-    // Log,
 }
 
 /// print a message to stderr formatted according to the programs style
@@ -37,8 +36,6 @@ pub fn print_info<T: std::fmt::Display>(term: &Terminal, msg: T, msg_type: Messa
                 sp(Special::Reset)
             ))
             .unwrap();
-        } // MessageType::Log => {
-          //     term.eprintln(format!("{}vct: log: {}{}", fg(Color::White), msg, sp(Special::Reset))).unwrap();
-          // }
+        }
     }
 }

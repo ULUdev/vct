@@ -22,9 +22,9 @@ impl VctError {
     pub fn new(kind: VctErrorKind, msg: &str) -> VctError {
         let message: String = match kind {
             VctErrorKind::ParsingError => format!("parsing error: {}", msg),
-            VctErrorKind::ParamError => format!("parsing error: {}", msg),
-            VctErrorKind::DatabaseError => format!("parsing error: {}", msg),
-            VctErrorKind::FileError => format!("parsing error: {}", msg),
+            VctErrorKind::ParamError => format!("parameter error: {}", msg),
+            VctErrorKind::DatabaseError => format!("database error: {}", msg),
+            VctErrorKind::FileError => format!("file error: {}", msg),
         };
         VctError { msg: message }
     }

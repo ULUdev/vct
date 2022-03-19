@@ -179,4 +179,4 @@ Options:
   --nodb: disable database
   -q,--query <query>: query vocabulary for <query>
 ";
-const VERSION_STR: &str = "vct: v1.4.20-nightly";
+const VERSION_STR: &str = "vct: v1.5.20-nightly";

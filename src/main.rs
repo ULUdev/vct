@@ -11,6 +11,7 @@ mod dict;
 mod error;
 mod info;
 mod pretty_print;
+mod query;
 mod question;
 
 use args::{load_params, Params};
@@ -72,18 +73,25 @@ fn main() {
     };
 
     let usedb: bool = match params.usedb {
-        Some(n) => {
-            if n {
-                info::print_info(
-                    &term,
-                    "using major unstable feature (db). Ignoring...",
-                    info::MessageType::Warning,
-                );
-            }
-            n
-        }
+        Some(n) => n,
         None => conf.database.unwrap_or(false),
     };
+
+    if let Some(n) = params.query {
+        match query::query(n, params.config_dir.clone(), &conf, usedb) {
+            Ok(n) => {
+                term.println(pretty_print::pretty_print(n)).unwrap();
+            }
+            Err(e) => {
+                info::print_info(
+                    &term,
+                    format!("error querying files: {}", e),
+                    info::MessageType::Error,
+                );
+                exit(1);
+            }
+        }
+    }
 
     // TODO: move this to src/dict.rs and add database implementation
     if params.dict != String::new() {

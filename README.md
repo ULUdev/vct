@@ -37,6 +37,11 @@ To create a set of vocabulary use the `-d` or `--dict` flag followed by:
 3. the meanings as a comma separated list
 if the language doesn't already exist it will be created.
 
+### Querying existing vocabulary
+`vct` allows for querying existing vocabulary using the `-q` or `--query` option
+followed by the pattern to search for. It will search in meaning and
+name. Currently you cannot filter by language.
+
 ## Configuration
 The configuration file is in `$XDG_CONFIG_HOME/vct/config.toml` (if `$XDG_CONFIG_HOME` doesn't exist it will be in `~/.config/vct/config.toml`)
 and currently has only two fields:
